@@ -63,6 +63,11 @@ type StatusResponse struct {
 }
 
 func NewServer(host string, port int) *Server {
+	if envPort := os.Getenv("PORT"); envPort != "" {
+		if _, err := fmt.Sscanf(envPort, "%d", &port); err == nil {
+			logger.Infof("Overriding server port with PORT environment variable: %d", port)
+		}
+	}
 	mux := http.NewServeMux()
 	s := &Server{
 		ready:       false,
@@ -75,7 +80,6 @@ func NewServer(host string, port int) *Server {
 	mux.HandleFunc("/ready", s.readyHandler)
 	mux.HandleFunc("/reload", s.reloadHandler)
 	mux.HandleFunc("/chat", s.chatHandler)
-	mux.HandleFunc("/cgat", s.chatHandler)
 
 	// Start task cleanup goroutine
 	go s.taskCleanupLoop()
@@ -280,7 +284,6 @@ func (s *Server) RegisterOnMux(mux HandlerMux) {
 	mux.HandleFunc("/ready", s.readyHandler)
 	mux.HandleFunc("/reload", s.reloadHandler)
 	mux.HandleFunc("/chat", s.chatHandler)
-	mux.HandleFunc("/cgat", s.chatHandler)
 	mux.HandleFunc("/v1/chat/completions", func(w http.ResponseWriter, r *http.Request) {
 		logger.Error("GATEWAY IS HITTING ITSELF FOR LLM CALLS!")
 		http.Error(w, "GATEWAY LOOP DETECTION", http.StatusLoopDetected)
