@@ -3,8 +3,8 @@ package agent
 import (
 	"context"
 	"os"
-	"sync"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
