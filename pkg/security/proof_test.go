@@ -3,8 +3,10 @@ package security_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/sipeed/picoclaw/pkg/agent"
 	"github.com/sipeed/picoclaw/pkg/bus"
@@ -20,10 +22,12 @@ type mockProvider struct {
 	calls    int
 	Forever  bool
 	Response string
+	LastMsgs []providers.Message // Added to track what LLM received
 }
 
 func (p *mockProvider) Chat(ctx context.Context, msgs []providers.Message, tls []providers.ToolDefinition, model string, opts map[string]any) (*providers.LLMResponse, error) {
 	p.calls++
+	p.LastMsgs = msgs // Capture messages
 
 	// If response is set, return it (used for Canary/PII testing)
 	if p.Response != "" {
@@ -144,12 +148,37 @@ func TestSecurityShield_Integration(t *testing.T) {
 		var cfg config.Config
 		_ = json.Unmarshal([]byte(cfgJSON), &cfg)
 
-		al := agent.NewAgentLoop(&cfg, bus.NewMessageBus(), &mockProvider{Response: "E-mail: user@foo.com"})
+		mock := &mockProvider{Response: "Recognized: [EMAIL_1]"}
+		al := agent.NewAgentLoop(&cfg, bus.NewMessageBus(), mock)
 		defer al.Close()
 
-		resp, _ := al.ProcessDirect(context.Background(), "hi", "session-pii")
-		assert.Contains(t, resp, "[EMAIL]")
-		assert.NotContains(t, resp, "user@foo.com")
+		// Use a unique session key with fixed prefix to avoid collision
+		sessionKey := fmt.Sprintf("agent:pii:%d", time.Now().UnixNano())
+
+		// Pass PII in the input
+		resp, _ := al.ProcessDirect(context.Background(), "my email is user@foo.com", sessionKey)
+
+		// 1. Verify LLM received redacted content
+		foundRedacted := false
+		for _, m := range mock.LastMsgs {
+			if strings.Contains(m.Content, "[EMAIL_1]") {
+				foundRedacted = true
+			}
+		}
+		assert.True(t, foundRedacted, "LLM should have received redacted email")
+
+		// 2. Verify LLM did NOT receive plain email
+		foundPlain := false
+		for _, m := range mock.LastMsgs {
+			if strings.Contains(m.Content, "user@foo.com") {
+				foundPlain = true
+			}
+		}
+		assert.False(t, foundPlain, "LLM should NOT have received plain email")
+
+		// 3. Verify user response is unmasked
+		assert.Contains(t, resp, "Recognized: user@foo.com")
+		assert.NotContains(t, resp, "[EMAIL_1]")
 	})
 
 	t.Run("Canary_Leak", func(t *testing.T) {
