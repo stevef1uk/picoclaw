@@ -16,7 +16,7 @@ data:
           "restrict_to_workspace": true,
           "allow_read_outside_workspace": false,
           "provider": "",
-          "model_name": "gemini-2.0-flash",
+          "model_name": "gemini-flash",
           "max_tokens": 32768,
           "max_tool_iterations": 50,
           "summarize_message_threshold": 20,
@@ -252,10 +252,11 @@ data:
           "api_base": "https://api.deepseek.com/v1"
         },
         {
-          "model_name": "gemini-2.0-flash",
-          "model": "gemini/gemini-2.0-flash-exp",
-          "api_base": "https://generativelanguage.googleapis.com/v1beta",
-          "api_key": "file://secrets/google-api-key"
+          "model_name": "gemini-flash",
+          "model": "openai/gemini-1.5-flash",
+          "api_base": "https://generativelanguage.googleapis.com/v1beta/openai/",
+          "api_key": "env://GOOGLE_API_KEY",
+          "request_timeout": 300
         },
         {
           "model_name": "qwen-plus",
