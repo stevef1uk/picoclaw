@@ -123,7 +123,6 @@ func NewAgentInstance(
 	if agentCfg != nil && strings.TrimSpace(agentCfg.SystemPrompt) != "" {
 		effectiveSystemPrompt = strings.TrimSpace(agentCfg.SystemPrompt)
 	}
-
 	contextBuilder := NewContextBuilder(workspace, baseWorkspace).
 		WithToolDiscovery(
 			mcpDiscoveryActive && cfg.Tools.MCP.Discovery.UseBM25,

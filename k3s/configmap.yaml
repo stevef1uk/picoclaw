@@ -59,11 +59,7 @@ data:
           },
           "placeholder": {
             "enabled": true,
-<<<<<<< HEAD
             "text": "Thinking... 💭"
-=======
-            "text": "Thinking... \ud83d\udcad"
->>>>>>> fix/isolation-hardening
           },
           "streaming": {
             "enabled": true,
@@ -136,11 +132,7 @@ data:
           },
           "placeholder": {
             "enabled": true,
-<<<<<<< HEAD
             "text": "Thinking... 💭"
-=======
-            "text": "Thinking... \ud83d\udcad"
->>>>>>> fix/isolation-hardening
           },
           "reasoning_channel_id": ""
         },

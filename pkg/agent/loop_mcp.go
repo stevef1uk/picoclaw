@@ -148,6 +148,8 @@ func (al *AgentLoop) RegisterMCPToolsToAgent(agentID string, agent *AgentInstanc
 
 		for _, tool := range conn.Tools {
 			mcpTool := tools.NewMCPTool(mcpManager, serverName, tool)
+			mcpTool.SetWorkspace(agent.Workspace)
+			mcpTool.SetMaxInlineTextRunes(al.cfg.Tools.MCP.GetMaxInlineTextChars())
 
 			if registerAsHidden {
 				agent.Tools.RegisterHidden(mcpTool)
