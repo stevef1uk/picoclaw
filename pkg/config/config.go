@@ -842,7 +842,7 @@ type SkillsToolsConfig struct {
 	ToolConfig            `                       yaml:"-"                 envPrefix:"PICOCLAW_TOOLS_SKILLS_"`
 	Registries            SkillsRegistriesConfig `yaml:",inline,omitempty"                                    json:"registries"`
 	Github                SkillsGithubConfig     `yaml:"github,omitempty"                                     json:"github"`
-	MaxConcurrentSearches int                    `yaml:"-"                                                    json:"max_concurrent_searches" env:"PICOCLAW_TOOLS_SKILLS_MAX_CONCURRENT_SEARCHES"`
+	MaxConcurrentSearches int                    `yaml:"-" json:"max_concurrent_searches" env:"PICOCLAW_TOOLS_SKILLS_MAX_CONCURRENT_SEARCHES"`
 	SearchCache           SearchCacheConfig      `yaml:"-"                                                    json:"search_cache"`
 	Whitelist             FlexibleStringSlice    `json:"whitelist,omitempty"         yaml:"-"                 env:"PICOCLAW_TOOLS_SKILLS_WHITELIST"`
 	WhitelistEnabled      bool                   `json:"whitelist_enabled,omitempty" yaml:"-"                 env:"PICOCLAW_TOOLS_SKILLS_WHITELIST_ENABLED"`

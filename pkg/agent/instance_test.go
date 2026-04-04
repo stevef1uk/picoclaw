@@ -374,6 +374,7 @@ func TestNewAgentInstance_InvalidExecConfigDoesNotExit(t *testing.T) {
 		t.Fatal("read_file tool should still be registered")
 	}
 }
+
 func TestNewAgentInstance_IsolatedWorkspace(t *testing.T) {
 	tmpDir := t.TempDir()
 	cfg := &config.Config{

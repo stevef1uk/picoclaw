@@ -304,14 +304,9 @@ func (s *Server) readyHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// HandlerMux defines the interface for an HTTP request multiplexer.
-type HandlerMux interface {
-	HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request))
-}
-
 // RegisterOnMux registers /health, /ready, /reload and /chat handlers onto the
 // given mux. This allows the health endpoints to be served by a shared HTTP server.
-func (s *Server) RegisterOnMux(mux HandlerMux) {
+func (s *Server) RegisterOnMux(mux Mux) {
 	mux.HandleFunc("/health", s.healthHandler)
 	mux.HandleFunc("/ready", s.readyHandler)
 	mux.HandleFunc("/reload", s.reloadHandler)
@@ -449,7 +444,7 @@ func (s *Server) handlePostChat(w http.ResponseWriter, r *http.Request) {
 	// Start processing in background
 	go func() {
 		// Use a long-running context for the chat call, but don't bind to r.Context()
-		// which will be cancelled when this request finishes.
+		// which will be canceled when this request finishes.
 		ctx := context.Background()
 		logger.Debugf("Starting async chat for session %s", sessionID)
 		reply, err := chatFunc(ctx, req.Message, sessionID, chatID)

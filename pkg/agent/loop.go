@@ -1184,13 +1184,14 @@ func (al *AgentLoop) GetConfig() *config.Config {
 	return al.cfg
 }
 
-// SetMediaStore injects a MediaStore for media lifecycle management.
+// GetMediaStore returns the currently configured MediaStore.
 func (al *AgentLoop) GetMediaStore() media.MediaStore {
 	al.mu.RLock()
 	defer al.mu.RUnlock()
 	return al.mediaStore
 }
 
+// SetMediaStore injects a MediaStore for media lifecycle management.
 func (al *AgentLoop) SetMediaStore(s media.MediaStore) {
 	al.mediaStore = s
 
@@ -1640,7 +1641,11 @@ func (al *AgentLoop) getOrCreateIsolatedAgent(agentID, channel, isolationID stri
 	agent.Tools.SetMediaStore(al.mediaStore)
 
 	// Re-register shared tools (web, message, spawn) to this transient agent
-	registerSharedTools(al, al.cfg, al.bus, &AgentRegistry{agents: map[string]*AgentInstance{agent.ID: agent}}, baseAgent.Provider)
+	registerSharedTools(
+		al, al.cfg, al.bus,
+		&AgentRegistry{agents: map[string]*AgentInstance{agent.ID: agent}},
+		baseAgent.Provider,
+	)
 
 	// Cache this agent instance per chat session
 	al.agentCache.Store(cacheKey, agent)

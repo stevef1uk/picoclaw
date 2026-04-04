@@ -449,7 +449,9 @@ func (r *ToolRegistry) Filter(whitelist []string, enabled bool) {
 			for _, w := range whitelist {
 				// Match exact (redundant but safe) or prefix with underscore
 				// We also check for "mcp_" prefix specifically to support MCP tool grouping
-				if strings.HasPrefix(name, "mcp_"+w+"_") || strings.HasPrefix(name, "tool_"+w+"_") || strings.HasPrefix(name, w+"_") {
+				if strings.HasPrefix(name, "mcp_"+w+"_") ||
+					strings.HasPrefix(name, "tool_"+w+"_") ||
+					strings.HasPrefix(name, w+"_") {
 					allowed = true
 					break
 				}

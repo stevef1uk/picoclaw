@@ -82,7 +82,9 @@ func NewAgentInstance(
 		maxReadFileSize := cfg.Tools.ReadFile.MaxReadFileSize
 		switch cfg.Tools.ReadFile.EffectiveMode() {
 		case config.ReadFileModeLines:
-			toolsRegistry.Register(tools.NewReadFileLinesTool(workspace, readRestrict, maxReadFileSize, allowReadPaths, denyReadPaths))
+			toolsRegistry.Register(tools.NewReadFileLinesTool(
+				workspace, readRestrict, maxReadFileSize, allowReadPaths, denyReadPaths,
+			))
 		default:
 			toolsRegistry.Register(tools.NewReadFileBytesTool(workspace, readRestrict, maxReadFileSize, allowReadPaths, denyReadPaths))
 		}
@@ -248,7 +250,7 @@ func NewAgentInstance(
 
 // resolveAgentWorkspace determines the workspace directory for an agent.
 func resolveAgentWorkspace(agentCfg *config.AgentConfig, defaults *config.AgentDefaults, isolationID string) string {
-	base := ""
+	var base string
 	if agentCfg != nil && strings.TrimSpace(agentCfg.Workspace) != "" {
 		base = expandHome(strings.TrimSpace(agentCfg.Workspace))
 	} else if agentCfg == nil || agentCfg.Default || agentCfg.ID == "" || routing.NormalizeAgentID(agentCfg.ID) == "main" {

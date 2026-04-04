@@ -791,7 +791,7 @@ func TestToolRegistry_Filter_SupportsPrefix(t *testing.T) {
 	}
 
 	if len(expected) > 0 {
-		var missing []string
+		missing := make([]string, 0, len(expected))
 		for m := range expected {
 			missing = append(missing, m)
 		}

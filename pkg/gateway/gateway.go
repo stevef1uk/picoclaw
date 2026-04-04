@@ -168,7 +168,8 @@ func Run(debug bool, homePath, configPath string, allowEmptyStartup bool) error 
 	}
 	defer pid.RemovePidFile(homePath)
 
-	fmt.Printf("🔍 Creating startup provider for model: %s (allow empty: %v)\n", cfg.Agents.Defaults.GetModelName(), allowEmptyStartup)
+	fmt.Printf("🔍 Creating startup provider for model: %s (allow empty: %v)\n",
+		cfg.Agents.Defaults.GetModelName(), allowEmptyStartup)
 	provider, modelID, err := createStartupProvider(cfg, allowEmptyStartup)
 	if err != nil {
 		fmt.Printf("❌ Error creating provider: %v\n", err)

@@ -1283,7 +1283,8 @@ func getSafeRelPath(workspace, path string) (string, error) {
 
 // validatePathWithConfigs returns the resolved absolute path if it is allowed
 // by the given workspace, restriction setting, and path whitelist/blacklist.
-func validatePathWithConfigs(path, workspace string, restrict bool, allowPatterns, denyPatterns []*regexp.Regexp) (string, error) {
+func validatePathWithConfigs(path, workspace string, restrict bool,
+	allowPatterns, denyPatterns []*regexp.Regexp) (string, error) {
 	cleaned := filepath.Clean(path)
 	var resolved string
 
