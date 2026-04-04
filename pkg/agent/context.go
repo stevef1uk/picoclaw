@@ -85,7 +85,7 @@ func NewContextBuilder(workspace string, baseWorkspace string) *ContextBuilder {
 	return &ContextBuilder{
 		workspace:     workspace,
 		baseWorkspace: baseWorkspace,
-		skillsLoader:  skills.NewSkillsLoader(workspace, baseWorkspace, globalSkillsDir, builtinSkillsDir, nil, false),
+		skillsLoader:  skills.NewSkillsLoader(workspace, baseWorkspace, globalSkillsDir, builtinSkillsDir),
 		memory:        NewMemoryStore(workspace),
 	}
 }
