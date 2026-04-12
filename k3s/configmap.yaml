@@ -16,7 +16,7 @@ data:
           "restrict_to_workspace": true,
           "allow_read_outside_workspace": false,
           "provider": "",
-          "model_name": "gemini-2.0-flash",
+          "model_name": "gemini-flash",
           "max_tokens": 32768,
           "max_tool_iterations": 50,
           "summarize_message_threshold": 20,
