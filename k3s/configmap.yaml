@@ -209,7 +209,9 @@ data:
           "write_timeout": 10,
           "max_connections": 100,
           "allow_from": [],
-          "placeholder": {},
+          "placeholder": {
+            "enabled": true
+          },
           "token": "pico-picoclaw-secret-123"
         },
         "pico_client": {
