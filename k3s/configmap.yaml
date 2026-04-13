@@ -9,14 +9,14 @@ data:
       "session": {
         "dm_scope": "per-channel-peer"
       },
-      "version": 1,
+      "version": 2,
       "agents": {
         "defaults": {
           "workspace": "",
           "restrict_to_workspace": true,
           "allow_read_outside_workspace": false,
           "provider": "",
-          "model_name": "gemini-2.0-flash",
+          "model_name": "gemini-flash",
           "max_tokens": 32768,
           "max_tool_iterations": 50,
           "summarize_message_threshold": 20,
@@ -252,10 +252,10 @@ data:
           "api_base": "https://api.deepseek.com/v1"
         },
         {
-          "model_name": "gemini-2.0-flash",
-          "model": "gemini/gemini-2.0-flash-exp",
+          "model_name": "gemini-flash",
+          "model": "gemini/gemini-3-flash-preview",
           "api_base": "https://generativelanguage.googleapis.com/v1beta",
-          "api_key": "env://GOOGLE_API_KEY",
+          "api_key": "file://secrets/google-api-key",
           "request_timeout": 300
         },
         {
@@ -549,9 +549,9 @@ data:
           "servers": {
             "hdn-server": {
               "enabled": true,
-              "command": "mcp-server-hdn",
+              "command": "",
               "type": "sse",
-              "url": "http://hdn-server:18801"
+              "url": "http://hdn-server:8080/mcp"
             }
           }
         },
