@@ -64,6 +64,7 @@ var stripModelPrefixProviders = map[string]struct{}{
 	"lmstudio":      {},
 	"azure-ai":      {},
 	"azure-foundry": {},
+	"gemini":        {},
 }
 
 func WithMaxTokensField(maxTokensField string) Option {

@@ -253,7 +253,7 @@ data:
         },
         {
           "model_name": "gemini-flash",
-          "model": "gemini/gemini-3-flash-preview",
+          "model": "gemini-3-flash-preview",
           "api_base": "https://generativelanguage.googleapis.com/v1beta/openai/",
           "api_key": "file://secrets/google-api-key",
           "request_timeout": 300
