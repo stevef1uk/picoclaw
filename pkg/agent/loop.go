@@ -530,9 +530,8 @@ func (al *AgentLoop) Run(ctx context.Context) error {
 			// Process message
 			func() {
 				defer func() {
-					if al.channelManager != nil {
-						al.channelManager.InvokeTypingStop(msg.Channel, msg.ChatID)
-					}
+					// We've moved InvokeTypingStop to the end of the turn (runTurn)
+					// to ensure terminal signals match the actual turn completion.
 				}()
 				// TODO: Re-enable media cleanup after inbound media is properly consumed by the agent.
 				// Currently disabled because files are deleted before the LLM can access their content.
@@ -1870,6 +1869,9 @@ func (al *AgentLoop) runTurn(ctx context.Context, ts *turnState) (turnResult, er
 				FinalContentLen: ts.finalContentLen(),
 			},
 		)
+		if al.channelManager != nil {
+			al.channelManager.InvokeTypingStop(ts.channel, ts.chatID)
+		}
 	}()
 
 	al.emitEvent(
