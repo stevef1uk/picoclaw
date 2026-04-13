@@ -784,16 +784,18 @@ func overridePicoToken(cfg *config.Config, token string) {
 		return
 	}
 	picoToken := cfg.Channels.Pico.Token.String()
-	// Only return early if the token already has the official 'pico-' prefix and is NOT just the base 'picoclaw' name
-	if picoToken != "" && strings.HasPrefix(picoToken, pico.PicoTokenPrefix) && !strings.HasPrefix(picoToken, "picoclaw") {
+
+	// If a valid, non-placeholder token is already set in the config, USE IT.
+	// This allows external clients like HDN to use a stable, known token.
+	if picoToken != "" && picoToken != "[NOT_HERE]" && !strings.Contains(picoToken, "GENERATED") {
+		logger.DebugCF("gateway", "Pico channel using stable configured token", map[string]any{"enabled": true, "token_preview": picoToken[:8] + "..."})
 		return
 	}
+
+	// Otherwise, fallback to the generated PID-based token for security/uniqueness
 	newToken := pico.PicoTokenPrefix + token
-	if picoToken != "" && picoToken != "[NOT_HERE]" {
-		newToken += "-" + picoToken
-	}
 	cfg.Channels.Pico.SetToken(newToken)
-	logger.DebugCF("gateway", "Pico channel token set", map[string]any{"enabled": true, "token_preview": newToken[:8] + "..."})
+	logger.DebugCF("gateway", "Pico channel using generated token", map[string]any{"enabled": true, "token_preview": newToken[:8] + "..."})
 }
 
 func createHeartbeatHandler(agentLoop *agent.AgentLoop) func(prompt, channel, chatID string) *tools.ToolResult {
