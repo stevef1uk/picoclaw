@@ -784,10 +784,16 @@ func overridePicoToken(cfg *config.Config, token string) {
 		return
 	}
 	picoToken := cfg.Channels.Pico.Token.String()
-	if picoToken == "" || strings.HasPrefix(picoToken, pico.PicoTokenPrefix) {
+	// Only return early if the token already has the official 'pico-' prefix and is NOT just the base 'picoclaw' name
+	if picoToken != "" && strings.HasPrefix(picoToken, pico.PicoTokenPrefix) && !strings.HasPrefix(picoToken, "picoclaw") {
 		return
 	}
-	cfg.Channels.Pico.SetToken(pico.PicoTokenPrefix + token + picoToken)
+	newToken := pico.PicoTokenPrefix + token
+	if picoToken != "" && picoToken != "[NOT_HERE]" {
+		newToken += "-" + picoToken
+	}
+	cfg.Channels.Pico.SetToken(newToken)
+	logger.DebugCF("gateway", "Pico channel token set", map[string]any{"enabled": true, "token_preview": newToken[:8] + "..."})
 }
 
 func createHeartbeatHandler(agentLoop *agent.AgentLoop) func(prompt, channel, chatID string) *tools.ToolResult {

@@ -203,6 +203,7 @@ data:
         },
         "pico": {
           "enabled": true,
+          "token": "picoclaw-secret-123",
           "allow_token_query": true,
           "ping_interval": 30,
           "read_timeout": 60,
