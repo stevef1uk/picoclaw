@@ -417,8 +417,7 @@ data:
                 "weather": true,
                 "summarize": true,
                 "github": true,
-                "monday": true,
-                "harvest": true
+                "hdn-server": true
               }
             }
           },
@@ -564,8 +563,6 @@ data:
           "weather",
           "summarize",
           "github",
-          "monday",
-          "harvest",
           "hdn-server"
         ],
         "whitelist_enabled": true,
