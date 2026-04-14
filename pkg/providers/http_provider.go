@@ -58,18 +58,6 @@ func NewAzureAIProvider(apiKey, apiBase, proxy, userAgent string, requestTimeout
 	}
 }
 
-func NewAzureAIProvider(apiKey, apiBase, proxy string, requestTimeoutSeconds int) *HTTPProvider {
-	return &HTTPProvider{
-		delegate: openai_compat.NewProvider(
-			apiKey,
-			apiBase,
-			proxy,
-			openai_compat.WithAzureHeaders(),
-			openai_compat.WithRequestTimeout(time.Duration(requestTimeoutSeconds)*time.Second),
-		),
-	}
-}
-
 func (p *HTTPProvider) Chat(
 	ctx context.Context,
 	messages []Message,
