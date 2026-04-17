@@ -1049,14 +1049,31 @@ func (t *ExecTool) guardCommand(command, cwd string) string {
 		if len(t.denyWritePaths) > 0 {
 			words := strings.Fields(cmd)
 			for i, word := range words {
+				// Skip flags but check their argument (next word)
+				if word == "-p" || word == "-rf" || word == "-r" || word == "-f" || word == "-d" {
+					// Check the next word as the actual path
+					if i+1 < len(words) {
+						nextWord := words[i+1]
+						for _, pattern := range t.denyWritePaths {
+							if pattern.MatchString(nextWord) {
+								return fmt.Sprintf("Command blocked: cannot write to %s (access denied)", nextWord)
+							}
+							// Also check path components
+							pathParts := strings.Split(nextWord, "/")
+							for _, part := range pathParts {
+								if pattern.MatchString(part) {
+									return fmt.Sprintf("Command blocked: cannot write to %s (access denied)", part)
+								}
+							}
+						}
+					}
+					continue
+				}
 				for _, pattern := range t.denyWritePaths {
 					if pattern.MatchString(word) {
 						return fmt.Sprintf("Command blocked: cannot write to %s (access denied)", word)
 					}
 					// Also check path components like "skills" in "mkdir -p skills/my_skill"
-					if i >= 0 && (word == "-p" || word == "-rf" || word == "-r") {
-						continue
-					}
 					pathParts := strings.Split(word, "/")
 					for _, part := range pathParts {
 						if pattern.MatchString(part) {
