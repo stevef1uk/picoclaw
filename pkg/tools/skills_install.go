@@ -115,13 +115,13 @@ func (t *InstallSkillTool) Execute(ctx context.Context, args map[string]any) *To
 	force, _ := args["force"].(bool)
 
 	// Check deny write paths before proceeding with installation.
-	// Patterns are expected to match relative paths (e.g., "skills", "skills/foo"),
-	// so we check against the relative path from workspace.
 	if len(t.denyWritePaths) > 0 {
-		relativePath := "skills"
-		for _, pattern := range t.denyWritePaths {
-			if pattern.MatchString(relativePath) {
-				return ErrorResult("access denied: cannot write to skills directory")
+		pathsToCheck := []string{"skills", filepath.Join("skills", slug)}
+		for _, path := range pathsToCheck {
+			for _, pattern := range t.denyWritePaths {
+				if pattern.MatchString(path) {
+					return ErrorResult(fmt.Sprintf("access denied: cannot write to %q", path))
+				}
 			}
 		}
 	}
