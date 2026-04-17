@@ -40,6 +40,7 @@ type ExecTool struct {
 	allowPatterns       []*regexp.Regexp
 	customAllowPatterns []*regexp.Regexp
 	allowedPathPatterns []*regexp.Regexp
+	denyWritePaths    []*regexp.Regexp
 	restrictToWorkspace bool
 	allowRemote         bool
 	sessionManager      *SessionManager
@@ -114,14 +115,24 @@ var (
 )
 
 func NewExecTool(workingDir string, restrict bool, allowPaths ...[]*regexp.Regexp) (*ExecTool, error) {
-	return NewExecToolWithConfig(workingDir, restrict, nil, allowPaths...)
+	return NewExecToolWithDenyPaths(workingDir, restrict, allowPaths, nil, nil)
 }
 
 func NewExecToolWithConfig(
 	workingDir string,
 	restrict bool,
-	config *config.Config,
+	cfg *config.Config,
 	allowPaths ...[]*regexp.Regexp,
+) (*ExecTool, error) {
+	return NewExecToolWithDenyPaths(workingDir, restrict, allowPaths, nil, cfg)
+}
+
+func NewExecToolWithDenyPaths(
+	workingDir string,
+	restrict bool,
+	allowPaths [][]*regexp.Regexp,
+	denyWritePaths []*regexp.Regexp,
+	cfg *config.Config,
 ) (*ExecTool, error) {
 	denyPatterns := make([]*regexp.Regexp, 0)
 	customAllowPatterns := make([]*regexp.Regexp, 0)
@@ -131,8 +142,8 @@ func NewExecToolWithConfig(
 		allowedPathPatterns = allowPaths[0]
 	}
 
-	if config != nil {
-		execConfig := config.Tools.Exec
+	if cfg != nil {
+		execConfig := cfg.Tools.Exec
 		enableDenyPatterns := execConfig.EnableDenyPatterns
 		allowRemote = execConfig.AllowRemote
 		if enableDenyPatterns {
@@ -148,7 +159,6 @@ func NewExecToolWithConfig(
 				}
 			}
 		} else {
-			// If deny patterns are disabled, we won't add any patterns, allowing all commands.
 			fmt.Println("Warning: deny patterns are disabled. All commands will be allowed.")
 		}
 		for _, pattern := range execConfig.CustomAllowPatterns {
@@ -163,8 +173,8 @@ func NewExecToolWithConfig(
 	}
 
 	var timeout time.Duration
-	if config != nil && config.Tools.Exec.TimeoutSeconds > 0 {
-		timeout = time.Duration(config.Tools.Exec.TimeoutSeconds) * time.Second
+	if cfg != nil && cfg.Tools.Exec.TimeoutSeconds > 0 {
+		timeout = time.Duration(cfg.Tools.Exec.TimeoutSeconds) * time.Second
 	}
 
 	return &ExecTool{
@@ -174,6 +184,7 @@ func NewExecToolWithConfig(
 		allowPatterns:       nil,
 		customAllowPatterns: customAllowPatterns,
 		allowedPathPatterns: allowedPathPatterns,
+		denyWritePaths:      denyWritePaths,
 		restrictToWorkspace: restrict,
 		allowRemote:         allowRemote,
 		sessionManager:      getSessionManager(),
@@ -1031,6 +1042,28 @@ func (t *ExecTool) guardCommand(command, cwd string) string {
 		for _, pattern := range t.denyPatterns {
 			if pattern.MatchString(lower) {
 				return "Command blocked by safety guard (dangerous pattern detected)"
+			}
+		}
+
+		// Check deny write paths - block commands that write to protected directories
+		if len(t.denyWritePaths) > 0 {
+			words := strings.Fields(cmd)
+			for i, word := range words {
+				for _, pattern := range t.denyWritePaths {
+					if pattern.MatchString(word) {
+						return fmt.Sprintf("Command blocked: cannot write to %s (access denied)", word)
+					}
+					// Also check path components like "skills" in "mkdir -p skills/my_skill"
+					if i >= 0 && (word == "-p" || word == "-rf" || word == "-r") {
+						continue
+					}
+					pathParts := strings.Split(word, "/")
+					for _, part := range pathParts {
+						if pattern.MatchString(part) {
+							return fmt.Sprintf("Command blocked: cannot write to %s (access denied)", part)
+						}
+					}
+				}
 			}
 		}
 	}

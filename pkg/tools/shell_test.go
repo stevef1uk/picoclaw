@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
@@ -1609,6 +1610,57 @@ func TestEncodeKeyTokenWithPtyKeyMode(t *testing.T) {
 			} else {
 				require.NoError(t, err, "unexpected error for %s", tt.name)
 				require.Equal(t, tt.expected, result, "wrong encoding for %s", tt.name)
+			}
+		})
+	}
+}
+
+func TestShellTool_DenyWritePaths(t *testing.T) {
+	tests := []struct {
+		name        string
+		command     string
+		denyPaths   []*regexp.Regexp
+		expectBlock bool
+	}{
+		{
+			name:        "mkdir blocked",
+			command:     "mkdir -p skills",
+			denyPaths:   []*regexp.Regexp{regexp.MustCompile(`^skills(/.*)?$`)},
+			expectBlock: true,
+		},
+		{
+			name:        "mkdir -p blocked",
+			command:     "mkdir -p skills/my_skill",
+			denyPaths:   []*regexp.Regexp{regexp.MustCompile(`^skills(/.*)?$`)},
+			expectBlock: true,
+		},
+		{
+			name:        "mkdir allowed",
+			command:     "mkdir -p workspace/data",
+			denyPaths:   []*regexp.Regexp{regexp.MustCompile(`^skills(/.*)?$`)},
+			expectBlock: false,
+		},
+		{
+			name:        "touch skills file blocked",
+			command:     "touch skills/test.txt",
+			denyPaths:   []*regexp.Regexp{regexp.MustCompile(`^skills(/.*)?$`)},
+			expectBlock: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tool, err := NewExecToolWithDenyPaths("", false, nil, tt.denyPaths, nil)
+			require.NoError(t, err)
+			result := tool.Execute(context.Background(), map[string]any{
+				"action":  "run",
+				"command": tt.command,
+			})
+			if tt.expectBlock {
+				require.True(t, result.IsError, "expected block for command: %s", tt.command)
+				require.Contains(t, result.ForLLM, "access denied")
+			} else {
+				require.False(t, result.IsError, "expected allow for command: %s, got: %s", tt.command, result.ForLLM)
 			}
 		})
 	}
