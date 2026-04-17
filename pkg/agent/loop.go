@@ -531,23 +531,6 @@ func (al *AgentLoop) Run(ctx context.Context) error {
 
 			// Process message
 			func() {
-				defer func() {
-					// We've moved InvokeTypingStop to the end of the turn (runTurn)
-					// to ensure terminal signals match the actual turn completion.
-				}()
-				// TODO: Re-enable media cleanup after inbound media is properly consumed by the agent.
-				// Currently disabled because files are deleted before the LLM can access their content.
-				// defer func() {
-				// 	if al.mediaStore != nil && msg.MediaScope != "" {
-				// 		if releaseErr := al.mediaStore.ReleaseAll(msg.MediaScope); releaseErr != nil {
-				// 			logger.WarnCF("agent", "Failed to release media", map[string]any{
-				// 				"scope": msg.MediaScope,
-				// 				"error": releaseErr.Error(),
-				// 			})
-				// 		}
-				// 	}
-				// }()
-
 				drainCanceled := false
 				cancelDrain := func() {
 					if drainCanceled {
@@ -577,6 +560,9 @@ func (al *AgentLoop) Run(ctx context.Context) error {
 					cancelDrain()
 					if finalResponse != "" {
 						al.PublishResponseIfNeeded(ctx, msg.Channel, msg.ChatID, finalResponse)
+					}
+					if al.channelManager != nil {
+						al.channelManager.InvokeTypingStop(msg.Channel, msg.ChatID)
 					}
 					return
 				}
@@ -637,6 +623,9 @@ func (al *AgentLoop) Run(ctx context.Context) error {
 
 				if finalResponse != "" {
 					al.PublishResponseIfNeeded(ctx, target.Channel, target.ChatID, finalResponse)
+				}
+				if al.channelManager != nil {
+					al.channelManager.InvokeTypingStop(target.Channel, target.ChatID)
 				}
 			}()
 		}
@@ -1871,9 +1860,6 @@ func (al *AgentLoop) runTurn(ctx context.Context, ts *turnState) (turnResult, er
 				FinalContentLen: ts.finalContentLen(),
 			},
 		)
-		if al.channelManager != nil {
-			al.channelManager.InvokeTypingStop(ts.channel, ts.chatID)
-		}
 	}()
 
 	al.emitEvent(
