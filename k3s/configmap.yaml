@@ -646,8 +646,8 @@ data:
         },
         "read_file": {
           "enabled": true,
-          "mode": "bytes",
-          "max_read_file_size": 65536
+          "mode": "plaintext",
+          "max_read_file_size": 1048576
         },
         "send_file": {
           "enabled": true
