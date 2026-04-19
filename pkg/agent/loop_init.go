@@ -5,6 +5,7 @@ package agent
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/sipeed/picoclaw/pkg/audio/tts"
@@ -21,13 +22,15 @@ import (
 
 func NewAgentLoop(
 	cfg *config.Config,
+	configPath string,
 	msgBus *bus.MessageBus,
 	provider providers.LLMProvider,
 ) *AgentLoop {
 	registry := NewAgentRegistry(cfg, provider)
 
 	// Set up shared fallback chain with rate limiting.
-	cooldown := providers.NewCooldownTracker()
+	cooldownPath := filepath.Join(filepath.Dir(filepath.Clean(registry.GetDefaultAgent().Workspace)), "cooldowns.json")
+	cooldown := providers.NewCooldownTracker(cooldownPath)
 	rl := providers.NewRateLimiterRegistry()
 	// Register rate limiters for all agents' candidates so that RPM limits
 	// configured in ModelConfig are enforced before each LLM call.
@@ -55,15 +58,17 @@ func NewAgentLoop(
 	}
 
 	al := &AgentLoop{
-		bus:         msgBus,
-		cfg:         cfg,
-		registry:    registry,
-		state:       stateManager,
-		eventBus:    eventBus,
-		fallback:    fallbackChain,
-		cmdRegistry: commands.NewRegistry(commands.BuiltinDefinitions()),
-		steering:    newSteeringQueue(parseSteeringMode(cfg.Agents.Defaults.SteeringMode)),
-		workerSem:   make(chan struct{}, workerPoolSize),
+		bus:          msgBus,
+		cfg:          cfg,
+		configPath:   configPath,
+		cooldownPath: cooldownPath,
+		registry:     registry,
+		state:        stateManager,
+		eventBus:     eventBus,
+		fallback:     fallbackChain,
+		cmdRegistry:  commands.NewRegistry(commands.BuiltinDefinitions()),
+		steering:     newSteeringQueue(parseSteeringMode(cfg.Agents.Defaults.SteeringMode)),
+		workerSem:    make(chan struct{}, workerPoolSize),
 	}
 	al.providerFactory = providers.CreateProviderFromConfig
 	al.hooks = NewHookManager(eventBus)
@@ -229,6 +234,10 @@ func registerSharedTools(
 
 		// Skill discovery and installation tools
 		skills_enabled := cfg.Tools.IsToolEnabled("skills")
+		if skills_enabled {
+			agent.Tools.Register(tools.NewFreeRideTool(al.GetConfigPath(), al.GetReloadFunc()))
+		}
+
 		find_skills_enable := cfg.Tools.IsToolEnabled("find_skills")
 		install_skills_enable := cfg.Tools.IsToolEnabled("install_skill")
 		if skills_enabled && (find_skills_enable || install_skills_enable) {

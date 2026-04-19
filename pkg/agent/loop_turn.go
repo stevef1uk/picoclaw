@@ -387,6 +387,11 @@ turnLoop:
 							fbResult.Provider, fbResult.Model, len(fbResult.Attempts)+1),
 						map[string]any{"agent_id": ts.agent.ID, "iteration": iteration},
 					)
+					displayName := fbResult.Model
+					if strings.HasPrefix(fbResult.IdentityKey, "model_name:") {
+						displayName = strings.TrimPrefix(fbResult.IdentityKey, "model_name:")
+					}
+					ts.SetFallbackInfo(true, displayName)
 				}
 				return fbResult.Response, nil
 			}
@@ -600,10 +605,10 @@ turnLoop:
 			reasoningContent = response.ReasoningContent
 		}
 		if ts.channel == "pico" {
-			go al.publishPicoReasoning(turnCtx, reasoningContent, ts.chatID)
+			go al.publishPicoReasoning(ctx, reasoningContent, ts.chatID)
 		} else {
 			go al.handleReasoning(
-				turnCtx,
+				ctx,
 				reasoningContent,
 				ts.channel,
 				al.targetReasoningChannelID(ts.channel),
@@ -671,7 +676,7 @@ turnLoop:
 				continue
 			}
 			finalContent = responseContent
-			logger.InfoCF("agent", "LLM response without tool calls (direct answer)",
+			logger.DebugCF("agent", "LLM response without tool calls (direct answer)",
 				map[string]any{
 					"agent_id":      ts.agent.ID,
 					"iteration":     iteration,
@@ -1051,7 +1056,7 @@ turnLoop:
 
 			argsJSON, _ := json.Marshal(toolArgs)
 			argsPreview := utils.Truncate(string(argsJSON), 200)
-			logger.InfoCF("agent", fmt.Sprintf("Tool call: %s(%s)", toolName, argsPreview),
+			logger.DebugCF("agent", fmt.Sprintf("Tool call: %s(%s)", toolName, argsPreview),
 				map[string]any{
 					"agent_id":  ts.agent.ID,
 					"tool":      toolName,

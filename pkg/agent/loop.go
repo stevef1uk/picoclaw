@@ -27,7 +27,6 @@ import (
 	"github.com/sipeed/picoclaw/pkg/routing"
 	"github.com/sipeed/picoclaw/pkg/session"
 	"github.com/sipeed/picoclaw/pkg/state"
-	"github.com/sipeed/picoclaw/pkg/utils"
 )
 
 type AgentLoop struct {
@@ -64,6 +63,8 @@ type AgentLoop struct {
 
 	turnSeq        atomic.Uint64
 	activeRequests sync.WaitGroup
+	configPath     string
+	cooldownPath   string
 
 	reloadFunc func() error
 
@@ -265,6 +266,14 @@ func (al *AgentLoop) Stop() {
 	al.running.Store(false)
 }
 
+func (al *AgentLoop) GetReloadFunc() func() error {
+	return al.reloadFunc
+}
+
+func (al *AgentLoop) GetConfigPath() string {
+	return al.configPath
+}
+
 // Close releases resources held by agent session stores. Call after Stop.
 func (al *AgentLoop) Close() {
 	mcpManager := al.mcp.takeManager()
@@ -378,7 +387,7 @@ func (al *AgentLoop) ReloadProviderAndConfig(
 			newRL.RegisterCandidates(agent.LightCandidates)
 		}
 	}
-	al.fallback = providers.NewFallbackChain(providers.NewCooldownTracker(), newRL)
+	al.fallback = providers.NewFallbackChain(providers.NewCooldownTracker(al.cooldownPath), newRL)
 
 	al.mu.Unlock()
 
@@ -513,7 +522,12 @@ func (al *AgentLoop) runAgentLoop(
 		}
 	}
 
-	if opts.SendResponse && result.finalContent != "" {
+	finalContent := result.finalContent
+	if usedFallback, fallbackModel := ts.GetFallbackInfo(); usedFallback {
+		finalContent += fmt.Sprintf("\n\n🦞 _(FreeRide: %s)_", fallbackModel)
+	}
+
+	if opts.SendResponse && finalContent != "" {
 		agentID, sessionKey, scope := outboundTurnMetadata(
 			agent.ID,
 			opts.Dispatch.SessionKey,
@@ -529,22 +543,11 @@ func (al *AgentLoop) runAgentLoop(
 			AgentID:    agentID,
 			SessionKey: sessionKey,
 			Scope:      scope,
-			Content:    result.finalContent,
+			Content:    finalContent,
 		})
 	}
 
-	if result.finalContent != "" {
-		responsePreview := utils.Truncate(result.finalContent, 120)
-		logger.InfoCF("agent", fmt.Sprintf("Response: %s", responsePreview),
-			map[string]any{
-				"agent_id":     agent.ID,
-				"session_key":  opts.Dispatch.SessionKey,
-				"iterations":   ts.currentIteration(),
-				"final_length": len(result.finalContent),
-			})
-	}
-
-	return result.finalContent, nil
+	return finalContent, nil
 }
 
 // selectCandidates returns the model candidates and resolved model name to use
