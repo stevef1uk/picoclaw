@@ -347,7 +347,7 @@
       "model": "gemini-3-flash-preview",
       "api_base": "https://generativelanguage.googleapis.com/v1beta/openai/",
       "request_timeout": 300,
-      "api_keys": "[NOT_HERE]",
+      "api_keys": "env://PICOCLAW_GOOGLE_API_KEY",
       "enabled": true
     },
     {
@@ -408,31 +408,31 @@
     {
       "model_name": "google-gemma-4-26b-a4b-it:free",
       "model": "openrouter/google/gemma-4-26b-a4b-it:free",
-      "api_keys": "[NOT_HERE]",
+      "api_keys": "env://OPENROUTER_API_KEY",
       "enabled": true
     },
     {
       "model_name": "google-gemma-4-31b-it:free",
       "model": "openrouter/google/gemma-4-31b-it:free",
-      "api_keys": "[NOT_HERE]",
+      "api_keys": "env://OPENROUTER_API_KEY",
       "enabled": true
     },
     {
       "model_name": "nvidia-nemotron-3-super-120b-a12b:free",
       "model": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
-      "api_keys": "[NOT_HERE]",
+      "api_keys": "env://OPENROUTER_API_KEY",
       "enabled": true
     },
     {
       "model_name": "qwen-qwen3-next-80b-a3b-instruct:free",
       "model": "openrouter/qwen/qwen3-next-80b-a3b-instruct:free",
-      "api_keys": "[NOT_HERE]",
+      "api_keys": "env://OPENROUTER_API_KEY",
       "enabled": true
     },
     {
       "model_name": "nvidia-nemotron-nano-9b-v2:free",
       "model": "openrouter/nvidia/nemotron-nano-9b-v2:free",
-      "api_keys": "[NOT_HERE]",
+      "api_keys": "env://OPENROUTER_API_KEY",
       "enabled": true
     }
   ],
@@ -490,7 +490,8 @@
             "summarize": true,
             "github": true,
             "freeride": true,
-            "hdn-server": true
+            "hdn-server": true,
+            "n8n-test": true
           }
         }
       }
@@ -607,7 +608,9 @@
       "weather",
       "summarize",
       "github",
-      "freeride"
+      "freeride",
+      "hdn-server",
+      "n8n-test"
     ],
     "whitelist_enabled": true,
     "mcp": {
@@ -626,6 +629,15 @@
           "command": "",
           "type": "sse",
           "url": "http://hdn-server:8080/mcp"
+        },
+        "n8n-test": {
+          "enabled": true,
+          "command": "",
+          "type": "sse",
+          "url": "https://n8namber.app.n8n.cloud/mcp/a5747ff8-db9b-4326-8bef-474301f65251",
+          "headers": {
+            "Authorization": "Bearer 97340696-89AE-43B2-B6E2-080E062150C9"
+          }
         }
       }
     },
