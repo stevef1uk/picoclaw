@@ -9,7 +9,7 @@
       "restrict_to_workspace": true,
       "allow_read_outside_workspace": false,
       "provider": "",
-      "model_name": "nemotron-3-super-120b-a12b",
+      "model_name": "openrouter-nemotron",
       "max_tokens": 32768,
       "max_tool_iterations": 50,
       "summarize_message_threshold": 20,
@@ -280,25 +280,25 @@
       "model_name": "openrouter-nemotron",
       "model": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
       "api_base": "https://openrouter.ai/api/v1",
-      "api_keys": "[NOT_HERE]"
+      "api_keys": "env://OPENROUTER_API_KEY",
     },
     {
       "model_name": "openrouter-elephant",
       "model": "openrouter/openrouter/elephant-alpha",
       "api_base": "https://openrouter.ai/api/v1",
-      "api_keys": "[NOT_HERE]"
+      "api_keys": "env://OPENROUTER_API_KEY",
     },
     {
       "model_name": "openrouter-free",
       "model": "openrouter/arcee-ai/trinity-large-preview:free",
       "api_base": "https://openrouter.ai/api/v1",
-      "api_keys": "[NOT_HERE]"
+      "api_keys": "env://OPENROUTER_API_KEY",
     },
     {
       "model_name": "openrouter-auto",
       "model": "openrouter/auto",
       "api_base": "https://openrouter.ai/api/v1",
-      "api_keys": "[NOT_HERE]"
+      "api_keys": "env://OPENROUTER_API_KEY",
     },
     {
       "model_name": "openrouter-gpt-5.4",
@@ -314,7 +314,7 @@
       "model_name": "azure-grok",
       "model": "openai/grok-4-fast-non-reasoning",
       "api_base": "https://TestSJF.openai.azure.com/openai/v1/",
-      "api_keys": "[NOT_HERE]",
+      "api_keys": "env://OPENROUTER_API_KEY",
       "enabled": true
     },
     {
