@@ -483,6 +483,7 @@ data:
                 "weather": true,
                 "summarize": true,
                 "github": true,
+                "freeride": true,
                 "hdn-server": true
               }
             }
@@ -599,6 +600,7 @@ data:
           "weather",
           "summarize",
           "github",
+          "freeride",
           "hdn-server"
         ],
         "whitelist_enabled": true,
