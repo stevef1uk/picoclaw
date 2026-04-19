@@ -4,6 +4,7 @@
 BINARY_NAME=picoclaw
 BUILD_DIR=build
 CMD_DIR=cmd/$(BINARY_NAME)
+DOCKER_USER=stevef1uk
 MAIN_GO=$(CMD_DIR)/main.go
 EXT=
 
@@ -242,6 +243,13 @@ build-android-bundle: generate
 build-pi-zero: build-linux-arm build-linux-arm64
 	@echo "Pi Zero 2 W builds: $(BUILD_DIR)/$(BINARY_NAME)-linux-arm (32-bit), $(BUILD_DIR)/$(BINARY_NAME)-linux-arm64 (64-bit)"
 
+## build-raspberry-pi: Build binaries and Docker image for Raspberry Pi
+build-raspberry-pi: build-pi-zero docker-build-rpi
+	@echo "Raspberry Pi full build complete (binaries and Docker image)"
+
+## build-rpi: Build binaries and Docker image for Raspberry Pi
+build-rpi: build-raspberry-pi
+
 ## build-all: Build the picoclaw core binary for all Makefile-managed platforms
 build-all: generate
 	@echo "Building for multiple platforms..."
@@ -357,6 +365,19 @@ docker-test:
 ## docker-run: Run picoclaw gateway in Docker (Alpine-based)
 docker-run:
 	docker compose -f docker/docker-compose.yml --profile gateway up
+
+## docker-build-rpi: Build Raspberry Pi specific Docker image (ARM64)
+docker-build-rpi:
+	@echo "Building Raspberry Pi Docker image (ARM64)..."
+	docker build --platform linux/arm64 -t $(DOCKER_USER)/picoclaw-rpi:latest -f docker/Dockerfile.rpi .
+
+## docker-push-rpi: Push Raspberry Pi specific Docker image (ARM64)
+docker-push-rpi:
+	@echo "Pushing Raspberry Pi Docker image (ARM64)..."
+	docker push $(DOCKER_USER)/picoclaw-rpi:latest
+
+docker-build-raspberry-pi: docker-build-rpi
+docker-push-raspberry-pi: docker-push-rpi
 
 ## docker-run-full: Run picoclaw gateway in Docker (full-featured)
 docker-run-full:
