@@ -240,7 +240,7 @@ func (t *FreeRideTool) handleAuto(ctx context.Context, limit int) *ToolResult {
 
 		msg := fmt.Sprintf("Success! Added %d free models as fallbacks: %s.\n", len(addedModels), strings.Join(addedModels, ", "))
 		msg += "Re-loading configuration to apply changes..."
-		
+
 		if t.reloadFunc != nil {
 			if err := t.reloadFunc(); err != nil {
 				return ErrorResult(fmt.Sprintf("%s\nFailed to reload: %v", msg, err))

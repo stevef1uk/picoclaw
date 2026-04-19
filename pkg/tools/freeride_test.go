@@ -86,7 +86,7 @@ func TestFreeRideTool_Auto(t *testing.T) {
 		ModelList: []*config.ModelConfig{},
 	}
 	initialCfg.Agents.Defaults.ModelName = "existing-model"
-	
+
 	if err := config.SaveConfig(configPath, initialCfg); err != nil {
 		t.Fatalf("failed to save initial config: %v", err)
 	}

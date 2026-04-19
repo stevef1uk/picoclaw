@@ -153,15 +153,15 @@ func NewAgentLoop(
 
 	eventBus := NewEventBus()
 	al := &AgentLoop{
-		bus:            msgBus,
-		cfg:             cfg,
-		configPath:      configPath,
-		registry:       registry,
-		state:          stateManager,
-		eventBus:       eventBus,
-		fallback:       fallbackChain,
-		cmdRegistry:    commands.NewRegistry(commands.BuiltinDefinitions()),
-		steering:       newSteeringQueue(parseSteeringMode(cfg.Agents.Defaults.SteeringMode)),
+		bus:         msgBus,
+		cfg:         cfg,
+		configPath:  configPath,
+		registry:    registry,
+		state:       stateManager,
+		eventBus:    eventBus,
+		fallback:    fallbackChain,
+		cmdRegistry: commands.NewRegistry(commands.BuiltinDefinitions()),
+		steering:    newSteeringQueue(parseSteeringMode(cfg.Agents.Defaults.SteeringMode)),
 	}
 
 	al.agentCacheTTL = 24 * time.Hour

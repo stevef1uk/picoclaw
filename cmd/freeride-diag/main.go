@@ -20,9 +20,9 @@ type Model struct {
 		Prompt     string `json:"prompt"`
 		Completion string `json:"completion"`
 	} `json:"pricing"`
-	Created    int64 `json:"created"`
-	Score      float64
-	LastError  string
+	Created     int64 `json:"created"`
+	Score       float64
+	LastError   string
 	IsReachable bool
 }
 
@@ -70,7 +70,7 @@ func main() {
 		}
 		m := &freeModels[i]
 		fmt.Printf("[%d/%d] Testing %s... ", i+1, len(freeModels), m.ID)
-		
+
 		err := testModel(apiKey, m.ID)
 		if err == nil {
 			m.IsReachable = true
@@ -113,7 +113,7 @@ func main() {
 func fetchModels(apiKey string) ([]Model, error) {
 	req, _ := http.NewRequest("GET", "https://openrouter.ai/api/v1/models", nil)
 	req.Header.Set("Authorization", "Bearer "+apiKey)
-	
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -138,11 +138,11 @@ func testModel(apiKey, modelID string) error {
 		"max_tokens": 10,
 	}
 	body, _ := json.Marshal(payload)
-	
+
 	req, _ := http.NewRequest("POST", "https://openrouter.ai/api/v1/chat/completions", bytes.NewReader(body))
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -154,6 +154,6 @@ func testModel(apiKey, modelID string) error {
 		respBody, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(respBody))
 	}
-	
+
 	return nil
 }
