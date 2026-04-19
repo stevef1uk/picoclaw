@@ -176,7 +176,9 @@ func TestProcessMessage_IsolatedTenant_UsesPrivateWorkspace(t *testing.T) {
 	fmt.Printf("Agent Response: %s\n", resp)
 
 	// Verify the file was written to the ISOLATED workspace, NOT the global one
-	isolatedPath := filepath.Join(tmpDir, "sessions", isolationID, "workspace", "secret.txt")
+	// Since we now prefer SenderID for isolation, the workspace is under "user1"
+	expectedIsoID := "user1"
+	isolatedPath := filepath.Join(tmpDir, "sessions", expectedIsoID, "workspace", "secret.txt")
 	globalPath := filepath.Join(tmpDir, "secret.txt")
 
 	// Debug: Print all files in tmpDir
@@ -195,9 +197,9 @@ func TestProcessMessage_IsolatedTenant_UsesPrivateWorkspace(t *testing.T) {
 		t.Errorf("expected file at %s to NOT exist (leaked to global workspace)", globalPath)
 	}
 
-	// Verify history is in the base sessions directory with the isolated key
-	// agent:main:tenant-A becomes agent_main_tenant-A
-	isoSessionPath := filepath.Join(tmpDir, "sessions", "agent_main_tenant-A.jsonl")
+	// Verify history is in the base sessions directory with the session key
+	// Based on resolveScopeKey(isolationID="user1"), it should be agent:main:user1
+	isoSessionPath := filepath.Join(tmpDir, "sessions", "agent_main_user1.jsonl")
 	if _, err := os.Stat(isoSessionPath); os.IsNotExist(err) {
 		t.Errorf("expected history at %s to exist", isoSessionPath)
 	} else {

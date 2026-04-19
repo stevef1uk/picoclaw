@@ -362,7 +362,7 @@ func TestDrainBusToSteering_RequeuesDifferentScopeMessage(t *testing.T) {
 	}
 
 	msgBus := bus.NewMessageBus()
-	al := NewAgentLoop(cfg, msgBus, &mockProvider{})
+	al := NewAgentLoop(cfg, "", msgBus, &mockProvider{})
 
 	activeMsg := bus.InboundMessage{
 		Channel:  "telegram",
@@ -1511,7 +1511,7 @@ func TestAgentLoop_Steering_SkippedToolsHaveErrorResults(t *testing.T) {
 	}
 
 	msgBus := bus.NewMessageBus()
-	al := NewAgentLoop(cfg, msgBus, wrappedProvider)
+	al := NewAgentLoop(cfg, "", msgBus, wrappedProvider)
 	al.RegisterTool(tool1)
 	al.RegisterTool(tool2)
 

@@ -454,7 +454,7 @@ func TestAgentLoop_EmitsSessionSummarizeEvent(t *testing.T) {
 	}
 
 	msgBus := bus.NewMessageBus()
-	al := NewAgentLoop(cfg, msgBus, &simpleMockProvider{response: "summary text"})
+	al := NewAgentLoop(cfg, "", msgBus, &simpleMockProvider{response: "summary text"})
 	defaultAgent := al.registry.GetDefaultAgent()
 	if defaultAgent == nil {
 		t.Fatal("expected default agent")

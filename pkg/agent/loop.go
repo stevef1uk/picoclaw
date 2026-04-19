@@ -1478,7 +1478,13 @@ func (al *AgentLoop) processMessage(ctx context.Context, msg bus.InboundMessage)
 		return "", routeErr
 	}
 
-	agent, err := al.getOrCreateIsolatedAgent(route.AgentID, msg.Channel, msg.ChatID)
+	// Prefer SenderID for isolation to ensure per-user workspaces that follow
+	// individuals across different chat rooms (e.g. personal memory in groups).
+	isolationID := msg.ChatID
+	if msg.SenderID != "" {
+		isolationID = msg.SenderID
+	}
+	agent, err := al.getOrCreateIsolatedAgent(route.AgentID, msg.Channel, isolationID)
 	if err != nil {
 		return "", err
 	}
@@ -1491,8 +1497,8 @@ func (al *AgentLoop) processMessage(ctx context.Context, msg bus.InboundMessage)
 	}
 
 	// Resolve session key from route, while preserving explicit agent-scoped keys.
-	// If caller provides a session key, respect it. Otherwise, derive from chatID for isolation.
-	scopeKey := resolveScopeKey(route, msg.SessionKey, msg.ChatID, agent.ID)
+	// If caller provides a session key, respect it. Otherwise, derive from isolationID.
+	scopeKey := resolveScopeKey(route, msg.SessionKey, isolationID, agent.ID)
 	sessionKey := scopeKey
 
 	logger.InfoCF("agent", "Routed message",

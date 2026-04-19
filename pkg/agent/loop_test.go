@@ -19,7 +19,6 @@ import (
 	"github.com/sipeed/picoclaw/pkg/config"
 	"github.com/sipeed/picoclaw/pkg/media"
 	"github.com/sipeed/picoclaw/pkg/providers"
-	"github.com/sipeed/picoclaw/pkg/routing"
 	"github.com/sipeed/picoclaw/pkg/tools"
 )
 
@@ -670,7 +669,7 @@ func TestProcessMessage_MediaToolHandledSkipsFollowUpLLMAndFinalText(t *testing.
 	if err != nil {
 		t.Fatalf("resolveMessageRoute() error = %v", err)
 	}
-	sessionKey := resolveScopeKey(route, "", "chat1", route.AgentID)
+	sessionKey := resolveScopeKey(route, "", "user1", route.AgentID)
 	history := defaultAgent.Sessions.GetHistory(sessionKey)
 	if len(history) == 0 {
 		t.Fatal("expected session history to be saved")
@@ -1399,8 +1398,8 @@ func TestProcessMessage_UsesRouteSessionKey(t *testing.T) {
 		},
 	}
 
-	// With chatID isolation, session key is derived from chatID
-	sessionKey := fmt.Sprintf("agent:main:%s", msg.ChatID)
+	// With SenderID isolation, session key is derived from SenderID
+	sessionKey := fmt.Sprintf("agent:main:%s", msg.SenderID)
 
 	defaultAgent := al.registry.GetDefaultAgent()
 	if defaultAgent == nil {
@@ -2084,9 +2083,14 @@ func TestAgentLoop_ToolLimitUsesDedicatedFallback(t *testing.T) {
 	al := NewAgentLoop(cfg, "", msgBus, provider)
 	al.RegisterTool(&toolLimitTestTool{})
 
-	response, err := al.ProcessDirectWithChannel(context.Background(), "hello", "tool-limit", "test", "direct")
+	msg := bus.InboundMessage{
+		Channel: "test",
+		ChatID:  "direct",
+		Content: "hello",
+	}
+	response, err := al.processMessage(context.Background(), msg)
 	if err != nil {
-		t.Fatalf("ProcessDirectWithChannel failed: %v", err)
+		t.Fatalf("processMessage failed: %v", err)
 	}
 	if response != toolLimitResponse {
 		t.Fatalf("response = %q, want %q", response, toolLimitResponse)
@@ -2096,14 +2100,10 @@ func TestAgentLoop_ToolLimitUsesDedicatedFallback(t *testing.T) {
 	if defaultAgent == nil {
 		t.Fatal("No default agent found")
 	}
-	route := al.registry.ResolveRoute(routing.RouteInput{
-		Channel: "test",
-		Peer: &routing.RoutePeer{
-			Kind: "direct",
-			ID:   "cron",
-		},
-	})
-	history := defaultAgent.Sessions.GetHistory(route.SessionKey)
+
+	// For unisolated "direct" chat, the session key defaults to agent:main:main
+	sessionKey := "agent:main:main"
+	history := defaultAgent.Sessions.GetHistory(sessionKey)
 	if len(history) != 4 {
 		t.Fatalf("history len = %d, want 4", len(history))
 	}
@@ -2296,7 +2296,7 @@ func TestHandleReasoning(t *testing.T) {
 			},
 		}
 		msgBus := bus.NewMessageBus()
-		return NewAgentLoop(cfg, msgBus, &mockProvider{}), msgBus
+		return NewAgentLoop(cfg, "", msgBus, &mockProvider{}), msgBus
 	}
 
 	t.Run("skips when any required field is empty", func(t *testing.T) {
