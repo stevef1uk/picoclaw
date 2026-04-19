@@ -100,3 +100,16 @@ env:
 - **404 Errors**: Ensure the model is still available on OpenRouter using `freeride list`. If it's gone, run `freeride auto` to refresh your fallback pool.
 - **429 Rate Limiting**: This is common with free models. PicoClaw will automatically try the next model in your `model_fallbacks` list.
 - **Security Blocks**: Ensure `freeride` is added to your `security_policy` allowed tools map.
+
+---
+
+## Legal & Responsible Use 🛡️
+
+FreeRide is provided for **personal assistance, educational research, and infrastructure failover** purposes only. By using this capability, you acknowledge and agree to the following:
+
+1.  **Terms of Service**: You are responsible for complying with [OpenRouter's Terms of Service](https://openrouter.ai/terms) and the individual "Acceptable Use Policies" of each model provider (e.g., Google, Meta, Mistral).
+2.  **No Guarantee of Service**: Free models are provided "as-is" by third parties. They may be withdrawn, rate-limited, or modified at any time without notice. 
+3.  **No Reselling**: You should not use FreeRide to build commercial services that "resell" free model access in a way that violates provider licenses (check specific model licenses like Llama 3 Community or Qwen for commercial usage thresholds).
+4.  **Rate Limit Respect**: PicoClaw handles failover automatically, but users should not use FreeRide to intentionally overwhelm or evade the fair-use rate limits of providers.
+
+*PicoClaw is an independent tool and is not affiliated with OpenRouter or any specific LLM provider.*
