@@ -20,8 +20,24 @@ data:
           "allow_write_paths": [
             "/home/picoclaw/.picoclaw/memory"
           ],
-          "provider": "",
-          "model_name": "nemotron-3-super-120b-a12b",
+          "provider": "openai",
+          "model_name": "google-gemma-4-26b-a4b-it:free",
+          "model_fallbacks": [
+            "google-gemma-4-26b-a4b-it:free",
+            "google-gemma-4-31b-it:free",
+            "nvidia-nemotron-3-super-120b-a12b:free",
+            "qwen-qwen3-next-80b-a3b-instruct:free",
+            "nvidia-nemotron-nano-9b-v2:free",
+            "openrouter-elephant-alpha",
+            "minimax-minimax-m2.5:free",
+            "arcee-ai-trinity-large-preview:free",
+            "google-lyria-3-pro-preview",
+            "google-lyria-3-clip-preview",
+            "nvidia-nemotron-3-nano-30b-a3b:free",
+            "nvidia-nemotron-nano-12b-v2-vl:free",
+            "openai-gpt-oss-120b:free",
+            "openai-gpt-oss-20b:free"
+          ],
           "max_tokens": 32768,
           "max_tool_iterations": 50,
           "summarize_message_threshold": 20,
@@ -251,154 +267,134 @@ data:
         {
           "model_name": "glm-4.7",
           "model": "zhipu/glm-4.7",
-          "api_base": "https://open.bigmodel.cn/api/paas/v4",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://open.bigmodel.cn/api/paas/v4"
         },
         {
           "model_name": "gpt-5.4",
           "model": "openai/gpt-5.4",
-          "api_base": "https://api.openai.com/v1",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://api.openai.com/v1"
         },
         {
           "model_name": "claude-sonnet-4.6",
           "model": "anthropic/claude-sonnet-4.6",
-          "api_base": "https://api.anthropic.com/v1",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://api.anthropic.com/v1"
         },
         {
           "model_name": "deepseek-chat",
           "model": "deepseek/deepseek-chat",
-          "api_base": "https://api.deepseek.com/v1",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://api.deepseek.com/v1"
         },
         {
           "model_name": "gemini-2.0-flash",
           "model": "gemini/gemini-2.0-flash-exp",
-          "api_base": "https://generativelanguage.googleapis.com/v1beta",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://generativelanguage.googleapis.com/v1beta"
         },
         {
           "model_name": "qwen-plus",
           "model": "qwen/qwen-plus",
-          "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1"
         },
         {
           "model_name": "moonshot-v1-8k",
           "model": "moonshot/moonshot-v1-8k",
-          "api_base": "https://api.moonshot.cn/v1",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://api.moonshot.cn/v1"
         },
         {
           "model_name": "llama-3.3-70b",
           "model": "groq/llama-3.3-70b-versatile",
-          "api_base": "https://api.groq.com/openai/v1",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://api.groq.com/openai/v1"
+        },
+        {
+          "model_name": "openrouter-nemotron",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "protocol": "openrouter",
+          "api_base": "https://openrouter.ai/api/v1"
+        },
+        {
+          "model_name": "openrouter-elephant",
+          "model": "openrouter/elephant-alpha",
+          "protocol": "openrouter",
+          "api_base": "https://openrouter.ai/api/v1"
+        },
+        {
+          "model_name": "openrouter-free",
+          "model": "arcee-ai/trinity-large-preview:free",
+          "protocol": "openrouter",
+          "api_base": "https://openrouter.ai/api/v1"
         },
         {
           "model_name": "openrouter-auto",
-          "model": "openrouter/auto",
-          "api_base": "https://openrouter.ai/api/v1",
-          "api_keys": "[NOT_HERE]"
+          "model": "auto",
+          "protocol": "openrouter",
+          "api_base": "https://openrouter.ai/api/v1"
         },
         {
           "model_name": "openrouter-gpt-5.4",
-          "model": "openrouter/openai/gpt-5.4",
-          "api_base": "https://openrouter.ai/api/v1",
-          "api_keys": "[NOT_HERE]"
+          "model": "openai/gpt-5.4",
+          "protocol": "openrouter",
+          "api_base": "https://openrouter.ai/api/v1"
         },
         {
           "model_name": "nemotron-4-340b",
           "model": "nvidia/nemotron-4-340b-instruct",
-          "api_base": "https://integrate.api.nvidia.com/v1",
-          "api_keys": [
-            "file://secrets/nvidia-api-key"
-          ],
-          "enabled": true
-        },
-        {
-          "model_name": "nemotron-3-super-120b-a12b",
-          "model": "nvidia/nemotron-3-super-120b-a12b",
-          "api_base": "https://integrate.api.nvidia.com/v1",
-          "api_keys": [
-            "file://secrets/nvidia-api-key"
-          ],
-          "enabled": true
+          "api_base": "https://integrate.api.nvidia.com/v1"
         },
         {
           "model_name": "azure-grok",
           "model": "openai/grok-4-fast-non-reasoning",
           "api_base": "https://TestSJF.openai.azure.com/openai/v1/",
-          "api_keys": "[NOT_HERE]",
           "enabled": true
         },
         {
           "model_name": "cerebras-llama-3.3-70b",
           "model": "cerebras/llama-3.3-70b",
-          "api_base": "https://api.cerebras.ai/v1",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://api.cerebras.ai/v1"
         },
         {
           "model_name": "vivgrid-auto",
           "model": "vivgrid/auto",
-          "api_base": "https://api.vivgrid.com/v1",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://api.vivgrid.com/v1"
         },
         {
           "model_name": "ark-code-latest",
           "model": "volcengine/ark-code-latest",
-          "api_base": "https://ark.cn-beijing.volces.com/api/v3",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://ark.cn-beijing.volces.com/api/v3"
         },
         {
           "model_name": "doubao-pro",
           "model": "volcengine/doubao-pro-32k",
-          "api_base": "https://ark.cn-beijing.volces.com/api/v3",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://ark.cn-beijing.volces.com/api/v3"
         },
         {
           "model_name": "deepseek-v3",
           "model": "shengsuanyun/deepseek-v3",
-          "api_base": "https://api.shengsuanyun.com/v1",
-          "api_keys": "[NOT_HERE]"
-        },
-        {
-          "model_name": "gemini-flash",
-          "model": "antigravity/gemini-3-flash",
-          "auth_method": "oauth",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://api.shengsuanyun.com/v1"
         },
         {
           "model_name": "copilot-gpt-5.4",
           "model": "github-copilot/gpt-5.4",
           "api_base": "http://localhost:4321",
-          "auth_method": "oauth",
-          "api_keys": "[NOT_HERE]"
+          "auth_method": "oauth"
         },
         {
           "model_name": "llama3",
           "model": "ollama/llama3",
-          "api_base": "http://localhost:11434/v1",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "http://localhost:11434/v1"
         },
         {
           "model_name": "mistral-small",
           "model": "mistral/mistral-small-latest",
-          "api_base": "https://api.mistral.ai/v1",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://api.mistral.ai/v1"
         },
         {
           "model_name": "deepseek-v3.2",
           "model": "avian/deepseek/deepseek-v3.2",
-          "api_base": "https://api.avian.io/v1",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://api.avian.io/v1"
         },
         {
           "model_name": "kimi-k2.5",
           "model": "avian/moonshotai/kimi-k2.5",
-          "api_base": "https://api.avian.io/v1",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://api.avian.io/v1"
         },
         {
           "model_name": "MiniMax-M2.5",
@@ -406,33 +402,112 @@ data:
           "api_base": "https://api.minimaxi.com/v1",
           "extra_body": {
             "reasoning_split": true
-          },
-          "api_keys": "[NOT_HERE]"
+          }
         },
         {
           "model_name": "LongCat-Flash-Thinking",
           "model": "longcat/LongCat-Flash-Thinking",
-          "api_base": "https://api.longcat.chat/openai",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://api.longcat.chat/openai"
         },
         {
           "model_name": "modelscope-qwen",
           "model": "modelscope/Qwen/Qwen3-235B-A22B-Instruct-2507",
-          "api_base": "https://api-inference.modelscope.cn/v1",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://api-inference.modelscope.cn/v1"
         },
         {
           "model_name": "local-model",
           "model": "vllm/custom-model",
           "api_base": "http://localhost:8000/v1",
-          "api_keys": "[NOT_HERE]",
           "enabled": true
         },
         {
           "model_name": "azure-gpt5",
           "model": "azure/my-gpt5-deployment",
-          "api_base": "https://your-resource.openai.azure.com",
-          "api_keys": "[NOT_HERE]"
+          "api_base": "https://your-resource.openai.azure.com"
+        },
+        {
+          "model_name": "google-gemma-4-26b-a4b-it:free",
+          "model": "google/gemma-4-26b-a4b-it:free",
+          "protocol": "openrouter",
+          "enabled": true
+        },
+        {
+          "model_name": "google-gemma-4-31b-it:free",
+          "model": "google/gemma-4-31b-it:free",
+          "protocol": "openrouter",
+          "enabled": true
+        },
+        {
+          "model_name": "nvidia-nemotron-3-super-120b-a12b:free",
+          "model": "nvidia/nemotron-3-super-120b-a12b:free",
+          "protocol": "openrouter",
+          "enabled": true
+        },
+        {
+          "model_name": "qwen-qwen3-next-80b-a3b-instruct:free",
+          "model": "qwen/qwen3-next-80b-a3b-instruct:free",
+          "protocol": "openrouter",
+          "enabled": true
+        },
+        {
+          "model_name": "nvidia-nemotron-nano-9b-v2:free",
+          "model": "nvidia/nemotron-nano-9b-v2:free",
+          "protocol": "openrouter",
+          "enabled": true
+        },
+        {
+          "model_name": "openrouter-elephant-alpha",
+          "model": "openrouter/elephant-alpha",
+          "protocol": "openrouter",
+          "enabled": true
+        },
+        {
+          "model_name": "minimax-minimax-m2.5:free",
+          "model": "minimax/minimax-m2.5:free",
+          "protocol": "openrouter",
+          "enabled": true
+        },
+        {
+          "model_name": "arcee-ai-trinity-large-preview:free",
+          "model": "arcee-ai/trinity-large-preview:free",
+          "protocol": "openrouter",
+          "enabled": true
+        },
+        {
+          "model_name": "google-lyria-3-pro-preview",
+          "model": "google/lyria-3-pro-preview",
+          "protocol": "openrouter",
+          "enabled": true
+        },
+        {
+          "model_name": "google-lyria-3-clip-preview",
+          "model": "google/lyria-3-clip-preview",
+          "protocol": "openrouter",
+          "enabled": true
+        },
+        {
+          "model_name": "nvidia-nemotron-3-nano-30b-a3b:free",
+          "model": "nvidia/nemotron-3-nano-30b-a3b:free",
+          "protocol": "openrouter",
+          "enabled": true
+        },
+        {
+          "model_name": "nvidia-nemotron-nano-12b-v2-vl:free",
+          "model": "nvidia/nemotron-nano-12b-v2-vl:free",
+          "protocol": "openrouter",
+          "enabled": true
+        },
+        {
+          "model_name": "openai-gpt-oss-120b:free",
+          "model": "openai/gpt-oss-120b:free",
+          "protocol": "openrouter",
+          "enabled": true
+        },
+        {
+          "model_name": "openai-gpt-oss-20b:free",
+          "model": "openai/gpt-oss-20b:free",
+          "protocol": "openrouter",
+          "enabled": true
         }
       ],
       "gateway": {
@@ -697,49 +772,19 @@ data:
         "go_version": "go1.26.1"
       }
     }
-  cron.json: |-
-    {
-      "version": 1,
-      "jobs": [
-        {
-          "id": "freeride-auto-daily",
-          "name": "Daily FreeRide Update",
-          "enabled": true,
-          "schedule": {
-            "kind": "cron",
-            "expr": "0 3 * * *"
-          },
-          "payload": {
-            "kind": "agent_turn",
-            "message": "freeride auto",
-            "command": "",
-            "channel": "cli",
-            "to": "cron"
-          },
-          "state": {},
-          "createdAtMs": 1713511200000,
-          "updatedAtMs": 1713511200000,
-          "deleteAfterRun": false
-        },
-        {
-          "id": "morning-news-summary",
-          "name": "Morning News Summary",
-          "enabled": true,
-          "schedule": {
-            "kind": "cron",
-            "expr": "0 8 * * *"
-          },
-          "payload": {
-            "kind": "agent_turn",
-            "message": "Search the web for the latest AI news and provide a concise summary.",
-            "channel": "telegram",
-            "chat_id": "8271300679",
-            "to": "cron"
-          },
-          "state": {},
-          "createdAtMs": 1713511200000,
-          "updatedAtMs": 1713511200000,
-          "deleteAfterRun": false
-        }
-      ]
-    }
+  cron.json: "{\n  \"version\": 1,\n  \"jobs\": [\n    {\n      \"id\": \"freeride-auto-daily\"\
+    ,\n      \"name\": \"Daily FreeRide Update\",\n      \"enabled\": true,\n    \
+    \  \"schedule\": {\n        \"kind\": \"cron\",\n        \"expr\": \"0 3 * * *\"\
+    \n      },\n      \"payload\": {\n        \"kind\": \"agent_turn\",\n        \"\
+    message\": \"freeride auto\",\n        \"command\": \"\",\n        \"channel\"\
+    : \"cli\",\n        \"to\": \"cron\"\n      },\n      \"state\": {},\n      \"\
+    createdAtMs\": 1713511200000,\n      \"updatedAtMs\": 1713511200000,\n      \"\
+    deleteAfterRun\": false\n    },\n    {\n      \"id\": \"morning-news-summary\"\
+    ,\n      \"name\": \"Morning News Summary\",\n      \"enabled\": true,\n     \
+    \ \"schedule\": {\n        \"kind\": \"cron\",\n        \"expr\": \"0 8 * * *\"\
+    \n      },\n      \"payload\": {\n        \"kind\": \"agent_turn\",\n        \"\
+    message\": \"Search the web for the latest AI news and provide a concise summary.\"\
+    ,\n        \"channel\": \"telegram\",\n        \"chat_id\": \"8271300679\",\n\
+    \        \"to\": \"cron\"\n      },\n      \"state\": {},\n      \"createdAtMs\"\
+    : 1713511200000,\n      \"updatedAtMs\": 1713511200000,\n      \"deleteAfterRun\"\
+    : false\n    }\n  ]\n}"
