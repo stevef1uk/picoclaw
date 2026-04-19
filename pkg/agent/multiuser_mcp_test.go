@@ -21,7 +21,7 @@ func TestMultiUserMCPPropagation(t *testing.T) {
 
 	msgBus := bus.NewMessageBus()
 	provider := &mockProvider{}
-	al := NewAgentLoop(cfg, msgBus, provider)
+	al := NewAgentLoop(cfg, "", msgBus, provider)
 
 	// Mock initialized MCP manager
 	mcpManager := mcp_pkg.NewManager()

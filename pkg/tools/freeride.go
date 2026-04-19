@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/sipeed/picoclaw/pkg/config"
-	"github.com/sipeed/picoclaw/pkg/logger"
 )
 
 // FreeRideTool adapts the FreeRide logic (from clawhub/free-ride) for PicoClaw.
