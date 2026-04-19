@@ -78,6 +78,7 @@ type AgentLoop struct {
 	activeRequests sync.WaitGroup
 
 	reloadFunc func() error
+	configPath string
 }
 
 // processOptions configures how a message is processed
@@ -124,6 +125,7 @@ const (
 
 func NewAgentLoop(
 	cfg *config.Config,
+	configPath string,
 	msgBus *bus.MessageBus,
 	provider providers.LLMProvider,
 ) *AgentLoop {
@@ -151,14 +153,15 @@ func NewAgentLoop(
 
 	eventBus := NewEventBus()
 	al := &AgentLoop{
-		bus:         msgBus,
-		cfg:         cfg,
-		registry:    registry,
-		state:       stateManager,
-		eventBus:    eventBus,
-		fallback:    fallbackChain,
-		cmdRegistry: commands.NewRegistry(commands.BuiltinDefinitions()),
-		steering:    newSteeringQueue(parseSteeringMode(cfg.Agents.Defaults.SteeringMode)),
+		bus:            msgBus,
+		cfg:             cfg,
+		configPath:      configPath,
+		registry:       registry,
+		state:          stateManager,
+		eventBus:       eventBus,
+		fallback:       fallbackChain,
+		cmdRegistry:    commands.NewRegistry(commands.BuiltinDefinitions()),
+		steering:       newSteeringQueue(parseSteeringMode(cfg.Agents.Defaults.SteeringMode)),
 	}
 
 	al.agentCacheTTL = 24 * time.Hour
@@ -336,6 +339,10 @@ func registerSharedTools(
 
 		// Skill discovery and installation tools
 		skills_enabled := cfg.Tools.IsToolEnabled("skills")
+		if skills_enabled {
+			agent.Tools.Register(tools.NewFreeRideTool(al.GetConfigPath(), al.GetReloadFunc()))
+		}
+
 		find_skills_enable := cfg.Tools.IsToolEnabled("find_skills")
 		install_skills_enable := cfg.Tools.IsToolEnabled("install_skill")
 		if skills_enabled && (find_skills_enable || install_skills_enable) {
@@ -1207,6 +1214,16 @@ func (al *AgentLoop) SetTranscriber(t asr.Transcriber) {
 // SetReloadFunc sets the callback function for triggering config reload.
 func (al *AgentLoop) SetReloadFunc(fn func() error) {
 	al.reloadFunc = fn
+}
+
+// GetReloadFunc returns the current reload callback.
+func (al *AgentLoop) GetReloadFunc() func() error {
+	return al.reloadFunc
+}
+
+// GetConfigPath returns the path to the configuration file.
+func (al *AgentLoop) GetConfigPath() string {
+	return al.configPath
 }
 
 var audioAnnotationRe = regexp.MustCompile(`\[(voice|audio)(?::[^\]]*)?\]`)
