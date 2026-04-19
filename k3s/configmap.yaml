@@ -253,3 +253,11 @@ data:
     echo_transcription\": false\n  },\n  \"build_info\": {\n    \"version\": \"0.1.0\"\
     ,\n    \"git_commit\": \"054b55fd\",\n    \"build_time\": \"2026-03-23T10:15:13+0100\"\
     ,\n    \"go_version\": \"go1.26.1\"\n  }\n}"
+  cron.json: "{\n  \"version\": 1,\n  \"jobs\": [\n    {\n      \"id\": \"freeride-auto-daily\"\
+    ,\n      \"name\": \"Daily FreeRide Update\",\n      \"enabled\": true,\n    \
+    \  \"schedule\": {\n        \"kind\": \"cron\",\n        \"expr\": \"0 3 * * *\"\
+    \n      },\n      \"payload\": {\n        \"kind\": \"agent_turn\",\n        \"\
+    message\": \"freeride auto\",\n        \"command\": \"\",\n        \"channel\"\
+    : \"cli\",\n        \"to\": \"cron\"\n      },\n      \"state\": {},\n      \"\
+    createdAtMs\": 1713511200000,\n      \"updatedAtMs\": 1713511200000,\n      \"\
+    deleteAfterRun\": false\n    }\n  ]\n}\n"
