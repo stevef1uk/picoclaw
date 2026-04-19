@@ -20,14 +20,16 @@ import (
 // - Long-term memory: memory/MEMORY.md
 // - Daily notes: memory/YYYYMM/YYYYMMDD.md
 type MemoryStore struct {
-	workspace  string
-	memoryDir  string
-	memoryFile string
+	workspace     string
+	baseWorkspace string
+	memoryDir     string
+	memoryFile    string
 }
 
 // NewMemoryStore creates a new MemoryStore with the given workspace path.
+// It also takes an optional baseWorkspace for global memory inheritance.
 // It ensures the memory directory exists.
-func NewMemoryStore(workspace string) *MemoryStore {
+func NewMemoryStore(workspace string, baseWorkspace string) *MemoryStore {
 	memoryDir := filepath.Join(workspace, "memory")
 	memoryFile := filepath.Join(memoryDir, "MEMORY.md")
 
@@ -35,9 +37,10 @@ func NewMemoryStore(workspace string) *MemoryStore {
 	os.MkdirAll(memoryDir, 0o755)
 
 	return &MemoryStore{
-		workspace:  workspace,
-		memoryDir:  memoryDir,
-		memoryFile: memoryFile,
+		workspace:     workspace,
+		baseWorkspace: baseWorkspace,
+		memoryDir:     memoryDir,
+		memoryFile:    memoryFile,
 	}
 }
 
@@ -131,18 +134,35 @@ func (ms *MemoryStore) GetRecentDailyNotes(days int) string {
 
 // GetMemoryContext returns formatted memory context for the agent prompt.
 // Includes long-term memory and recent daily notes.
+// If baseWorkspace is set, it also includes global memory context.
 func (ms *MemoryStore) GetMemoryContext() string {
 	longTerm := ms.ReadLongTerm()
 	recentNotes := ms.GetRecentDailyNotes(3)
 
-	if longTerm == "" && recentNotes == "" {
+	var globalLongTerm string
+	if ms.baseWorkspace != "" && ms.baseWorkspace != ms.workspace {
+		globalFile := filepath.Join(ms.baseWorkspace, "memory", "MEMORY.md")
+		if data, err := os.ReadFile(globalFile); err == nil {
+			globalLongTerm = string(data)
+		}
+	}
+
+	if longTerm == "" && recentNotes == "" && globalLongTerm == "" {
 		return ""
 	}
 
 	var sb strings.Builder
 
+	if globalLongTerm != "" {
+		sb.WriteString("## Global Memory\n\n")
+		sb.WriteString(globalLongTerm)
+		if longTerm != "" || recentNotes != "" {
+			sb.WriteString("\n\n---\n\n")
+		}
+	}
+
 	if longTerm != "" {
-		sb.WriteString("## Long-term Memory\n\n")
+		sb.WriteString("## Session Memory\n\n")
 		sb.WriteString(longTerm)
 	}
 
