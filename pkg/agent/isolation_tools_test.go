@@ -40,7 +40,7 @@ func TestIsolationLacksManualTools(t *testing.T) {
 
 	msgBus := bus.NewMessageBus()
 	provider := &isolationMockProvider{}
-	al := NewAgentLoop(cfg, msgBus, provider)
+	al := NewAgentLoop(cfg, "", msgBus, provider)
 
 	tool := &isolationMockTool{name: "my_custom_tool"}
 	al.RegisterTool(tool)
@@ -77,7 +77,7 @@ func TestManualToolsPreservedAfterReload(t *testing.T) {
 
 	msgBus := bus.NewMessageBus()
 	provider := &isolationMockProvider{}
-	al := NewAgentLoop(cfg, msgBus, provider)
+	al := NewAgentLoop(cfg, "", msgBus, provider)
 
 	tool := &isolationMockTool{name: "my_custom_tool"}
 	al.RegisterTool(tool)
@@ -154,7 +154,7 @@ func TestProcessMessage_IsolatedTenant_UsesPrivateWorkspace(t *testing.T) {
 		},
 		response: "File written.",
 	}
-	al := NewAgentLoop(cfg, msgBus, provider)
+	al := NewAgentLoop(cfg, "", msgBus, provider)
 	defer al.Close()
 
 	isolationID := "tenant-A"
