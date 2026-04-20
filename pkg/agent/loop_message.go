@@ -137,12 +137,17 @@ func (al *AgentLoop) processMessage(ctx context.Context, msg bus.InboundMessage)
 		return al.processSystemMessage(ctx, msg)
 	}
 
+	logger.DebugCF("agent", "Resolving message route", map[string]any{"channel": msg.Channel, "chat_id": msg.ChatID})
 	route, agent, routeErr := al.resolveMessageRoute(msg)
 	if routeErr != nil {
+		logger.ErrorCF("agent", "Failed to resolve message route", map[string]any{"error": routeErr.Error()})
 		return "", routeErr
 	}
+	logger.DebugCF("agent", "Message route resolved", map[string]any{"agent_id": agent.ID, "matched_by": route.MatchedBy})
 
+	logger.DebugCF("agent", "Allocating route session", nil)
 	allocation := al.allocateRouteSession(route, msg)
+	logger.DebugCF("agent", "Route session allocated", map[string]any{"session_key": allocation.SessionKey})
 
 	// Resolve session key from the route allocation, while preserving explicit
 	// agent-scoped keys supplied by the caller.

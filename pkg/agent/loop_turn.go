@@ -20,6 +20,8 @@ import (
 )
 
 func (al *AgentLoop) runTurn(ctx context.Context, ts *turnState) (turnResult, error) {
+	logger.InfoCF("agent", "Turn started", map[string]any{"turn_id": ts.turnID, "agent_id": ts.agentID})
+	ts.setPhase(TurnPhaseRunning)
 	turnCtx, turnCancel := context.WithCancel(ctx)
 	defer turnCancel()
 	ts.setTurnCancel(turnCancel)
