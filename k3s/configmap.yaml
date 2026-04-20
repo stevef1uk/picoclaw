@@ -622,7 +622,7 @@ data:
         "api_key": "picoclaw-secret-123",
         "chat_enabled": true,
         "hot_reload": true,
-        "log_level": "info"
+        "log_level": "debug"
       },
       "hooks": {
         "enabled": true,
@@ -669,6 +669,8 @@ data:
                 "weather": true,
                 "summarize": true,
                 "github": true,
+                "monday": true,
+                "harvest": true,
                 "freeride": true,
                 "hdn-server": true
               }
@@ -786,6 +788,8 @@ data:
           "weather",
           "summarize",
           "github",
+          "monday",
+          "harvest",
           "freeride",
           "hdn-server"
         ],

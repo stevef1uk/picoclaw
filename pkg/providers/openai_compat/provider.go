@@ -180,6 +180,32 @@ func (p *Provider) buildRequestBody(
 		}
 	}
 
+	// Thinking support for OpenRouter
+	if level, ok := options["thinking_level"].(string); ok && level != "" && level != "off" {
+		if u, err := url.Parse(p.apiBase); err == nil && u.Hostname() == "openrouter.ai" {
+			// Map level to budget tokens (using same scale as Anthropic)
+			budget := 0
+			switch level {
+			case "low":
+				budget = 4096
+			case "medium":
+				budget = 16384
+			case "high":
+				budget = 32000
+			case "xhigh":
+				budget = 64000
+			}
+			if budget > 0 {
+				requestBody["thinking"] = map[string]any{
+					"type":          "enabled",
+					"budget_tokens": budget,
+				}
+				// Remove temperature when thinking is enabled (strict requirement for some models)
+				delete(requestBody, "temperature")
+			}
+		}
+	}
+
 	// Merge extra body fields configured per-provider/model.
 	// These are injected last so they take precedence over defaults.
 	maps.Copy(requestBody, p.extraBody)
@@ -464,6 +490,16 @@ func buildToolsList(tools []ToolDefinition, nativeSearch bool) []any {
 		result = append(result, map[string]any{"type": "web_search_preview"})
 	}
 	return result
+}
+
+func (p *Provider) SupportsThinking() bool {
+	// Enable thinking support for OpenRouter.
+	// OpenRouter acts as a passthrough for Anthropic and DeepSeek-R1 models that support thinking.
+	u, err := url.Parse(p.apiBase)
+	if err != nil {
+		return false
+	}
+	return u.Hostname() == "openrouter.ai"
 }
 
 func (p *Provider) SupportsNativeSearch() bool {

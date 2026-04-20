@@ -41,6 +41,7 @@ type ExecTool struct {
 	allowPatterns       []*regexp.Regexp
 	customAllowPatterns []*regexp.Regexp
 	allowedPathPatterns []*regexp.Regexp
+	denyWritePaths    []*regexp.Regexp
 	restrictToWorkspace bool
 	allowRemote         bool
 	sessionManager      *SessionManager
@@ -115,7 +116,7 @@ var (
 )
 
 func NewExecTool(workingDir string, restrict bool, allowPaths ...[]*regexp.Regexp) (*ExecTool, error) {
-	return NewExecToolWithConfig(workingDir, restrict, nil, allowPaths...)
+	return NewExecToolWithDenyPaths(workingDir, restrict, allowPaths, nil, nil)
 }
 
 func NewExecToolWithConfig(
@@ -123,6 +124,16 @@ func NewExecToolWithConfig(
 	restrict bool,
 	cfg *config.Config,
 	allowPaths ...[]*regexp.Regexp,
+) (*ExecTool, error) {
+	return NewExecToolWithDenyPaths(workingDir, restrict, allowPaths, nil, cfg)
+}
+
+func NewExecToolWithDenyPaths(
+	workingDir string,
+	restrict bool,
+	allowPaths [][]*regexp.Regexp,
+	denyWritePaths []*regexp.Regexp,
+	cfg *config.Config,
 ) (*ExecTool, error) {
 	denyPatterns := make([]*regexp.Regexp, 0)
 	customAllowPatterns := make([]*regexp.Regexp, 0)
@@ -149,7 +160,6 @@ func NewExecToolWithConfig(
 				}
 			}
 		} else {
-			// If deny patterns are disabled, we won't add any patterns, allowing all commands.
 			fmt.Println("Warning: deny patterns are disabled. All commands will be allowed.")
 		}
 		for _, pattern := range execConfig.CustomAllowPatterns {
@@ -175,6 +185,7 @@ func NewExecToolWithConfig(
 		allowPatterns:       nil,
 		customAllowPatterns: customAllowPatterns,
 		allowedPathPatterns: allowedPathPatterns,
+		denyWritePaths:      denyWritePaths,
 		restrictToWorkspace: restrict,
 		allowRemote:         allowRemote,
 		sessionManager:      getSessionManager(),
@@ -1036,6 +1047,45 @@ func (t *ExecTool) guardCommand(command, cwd string) string {
 		for _, pattern := range t.denyPatterns {
 			if pattern.MatchString(lower) {
 				return "Command blocked by safety guard (dangerous pattern detected)"
+			}
+		}
+
+		// Check deny write paths - block commands that write to protected directories
+		if len(t.denyWritePaths) > 0 {
+			words := strings.Fields(cmd)
+			for i, word := range words {
+				// Skip flags but check their argument (next word)
+				if word == "-p" || word == "-rf" || word == "-r" || word == "-f" || word == "-d" {
+					// Check the next word as the actual path
+					if i+1 < len(words) {
+						nextWord := words[i+1]
+						for _, pattern := range t.denyWritePaths {
+							if pattern.MatchString(nextWord) {
+								return fmt.Sprintf("Command blocked: cannot write to %s (access denied)", nextWord)
+							}
+							// Also check path components
+							pathParts := strings.Split(nextWord, "/")
+							for _, part := range pathParts {
+								if pattern.MatchString(part) {
+									return fmt.Sprintf("Command blocked: cannot write to %s (access denied)", part)
+								}
+							}
+						}
+					}
+					continue
+				}
+				for _, pattern := range t.denyWritePaths {
+					if pattern.MatchString(word) {
+						return fmt.Sprintf("Command blocked: cannot write to %s (access denied)", word)
+					}
+					// Also check path components like "skills" in "mkdir -p skills/my_skill"
+					pathParts := strings.Split(word, "/")
+					for _, part := range pathParts {
+						if pattern.MatchString(part) {
+							return fmt.Sprintf("Command blocked: cannot write to %s (access denied)", part)
+						}
+					}
+				}
 			}
 		}
 	}

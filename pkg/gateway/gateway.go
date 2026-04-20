@@ -114,24 +114,46 @@ func (p *startupBlockedProvider) GetDefaultModel() string {
 }
 
 // Run starts the gateway runtime using the configuration loaded from configPath.
-func Run(debug bool, homePath, configPath string, allowEmptyStartup bool) (runErr error) {
-	panicPath := filepath.Join(homePath, logPath, panicFile)
-	panicFunc, err := logger.InitPanic(panicPath)
-	if err != nil {
-		return fmt.Errorf("error initializing panic log: %w", err)
-	}
-	defer panicFunc()
+func Run(
+	debug bool,
+	homePath string,
+	configPath string,
+	allowEmptyStartup bool,
+) (runErr error) {
+	fmt.Printf("📂 Home Path: %s\n", homePath)
+	fmt.Printf("📄 Config Path: %s\n", configPath)
 
-	if err = logger.EnableFileLogging(filepath.Join(homePath, logPath, logFile)); err != nil {
+	// Ensure home directory exists early
+	if err := os.MkdirAll(homePath, 0o755); err != nil {
+		return fmt.Errorf("failed to create home directory: %w", err)
+	}
+
+	// Initialize panic logging
+	panicPath := filepath.Join(homePath, logPath, panicFile)
+	fmt.Printf("🔧 Initializing panic log: %s\n", panicPath)
+	panicCleanup, err := logger.InitPanic(panicPath)
+	if err != nil {
+		return fmt.Errorf("failed to initialize panic log: %w", err)
+	}
+	defer panicCleanup()
+	fmt.Println("✓ Panic log initialized")
+
+	// Enable main file logging
+	mainLogPath := filepath.Join(homePath, logPath, logFile)
+	fmt.Printf("🔧 Enabling file logging: %s\n", mainLogPath)
+	if err = logger.EnableFileLogging(mainLogPath); err != nil {
 		logger.Fatal(fmt.Sprintf("error enabling file logging: %v", err))
 	}
 	defer logger.DisableFileLogging()
+	fmt.Println("✓ File logging enabled")
 
+	// Set initial log level from config if possible, otherwise default to INFO
 	if debug {
 		logger.SetLevel(logger.DEBUG)
 	} else {
 		logger.SetLevelFromString(config.ResolveGatewayLogLevel(configPath))
 	}
+
 	defer func() {
 		if runErr != nil {
 			logger.ErrorCF("gateway", "Gateway startup failed", map[string]any{
@@ -144,10 +166,12 @@ func Run(debug bool, homePath, configPath string, allowEmptyStartup bool) (runEr
 		}
 	}()
 
+	fmt.Println("🔍 Loading configuration...")
 	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
 		return fmt.Errorf("error loading config: %w", err)
 	}
+	logger.Info("✓ Configuration loaded")
 
 	if err = preCheckConfig(cfg); err != nil {
 		return fmt.Errorf("config pre-check failed: %w", err)
@@ -156,6 +180,7 @@ func Run(debug bool, homePath, configPath string, allowEmptyStartup bool) (runEr
 	// Debug mode permanently overrides the config log level to DEBUG.
 	if debug {
 		fmt.Println("🔍 Debug mode enabled")
+		logger.SetLevel(logger.DEBUG)
 	} else {
 		effectiveLogLevel := config.EffectiveGatewayLogLevel(cfg)
 		logger.SetLevelFromString(effectiveLogLevel)
@@ -167,7 +192,7 @@ func Run(debug bool, homePath, configPath string, allowEmptyStartup bool) (runEr
 		return fmt.Errorf("error opening gateway listeners: %w", err)
 	}
 
-	// Enforce singleton: write PID file with generated token.
+	// Enforce singleton and generate auth token
 	pidData, err := pid.WritePidFile(homePath, bindPlan.ProbeHost, cfg.Gateway.Port)
 	if err != nil {
 		logger.Warnf("write pid file failed: %v", err)
@@ -177,6 +202,8 @@ func Run(debug bool, homePath, configPath string, allowEmptyStartup bool) (runEr
 		return fmt.Errorf("singleton check failed: %w", err)
 	}
 	defer pid.RemovePidFile(homePath)
+
+	logger.Info("✓ PID file and auth token initialized")
 	closeListeners := true
 	defer func() {
 		if !closeListeners {
@@ -187,17 +214,26 @@ func Run(debug bool, homePath, configPath string, allowEmptyStartup bool) (runEr
 		}
 	}()
 
+	msgBus := bus.NewMessageBus()
+
 	provider, modelID, err := createStartupProvider(cfg, allowEmptyStartup)
 	if err != nil {
 		return fmt.Errorf("error creating provider: %w", err)
 	}
+	logger.Infof("✓ LLM Provider initialized (Model: %s)", modelID)
 
 	if modelID != "" {
 		cfg.Agents.Defaults.ModelName = modelID
 	}
 
-	msgBus := bus.NewMessageBus()
 	agentLoop := agent.NewAgentLoop(cfg, configPath, msgBus, provider)
+	logger.Info("✓ Agent loop initialized")
+
+	runningServices, err := setupAndStartServices(cfg, agentLoop, msgBus, pidData.Token, listenResult)
+	if err != nil {
+		return fmt.Errorf("error setting up services: %w", err)
+	}
+	logger.Info("✓ Core services started")
 
 	fmt.Println("\n📦 Agent Status:")
 	startupInfo := agentLoop.GetStartupInfo()
@@ -212,11 +248,6 @@ func Run(debug bool, homePath, configPath string, allowEmptyStartup bool) (runEr
 			"skills_total":     skillsInfo["total"],
 			"skills_available": skillsInfo["available"],
 		})
-
-	runningServices, err := setupAndStartServices(cfg, agentLoop, msgBus, pidData.Token, listenResult)
-	if err != nil {
-		return err
-	}
 	closeListeners = false
 
 	// Setup manual reload channel for /reload endpoint

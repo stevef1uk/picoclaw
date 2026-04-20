@@ -102,11 +102,13 @@ func NewAgentInstance(
 		toolsRegistry.Register(tools.NewListDirTool(workspace, readRestrict, allowReadPaths))
 	}
 	if cfg.Tools.IsToolEnabled("exec") {
-		execTool, err := tools.NewExecToolWithConfig(workspace, restrict, cfg, allowReadPaths)
+		execTool, err := tools.NewExecToolWithDenyPaths(workspace, restrict, [][]*regexp.Regexp{allowReadPaths}, denyWritePaths, cfg)
 		if err != nil {
 			logger.ErrorCF("agent", "Failed to initialize exec tool; continuing without exec",
 				map[string]any{"error": err.Error()})
-		} else {
+			execTool = nil
+		}
+		if execTool != nil {
 			toolsRegistry.Register(execTool)
 		}
 	}
