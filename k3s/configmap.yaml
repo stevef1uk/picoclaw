@@ -15,10 +15,12 @@ data:
           "workspace": "/home/picoclaw/.picoclaw",
           "restrict_to_workspace": true,
           "allow_read_paths": [
-            "/home/picoclaw/.picoclaw/memory"
+            "/home/picoclaw/.picoclaw",
+            "/tmp"
           ],
           "allow_write_paths": [
-            "/home/picoclaw/.picoclaw/memory"
+            "/home/picoclaw/.picoclaw",
+            "/tmp"
           ],
           "provider": "openai",
           "model_name": "google-gemma-4-26b-a4b-it:free",
@@ -46,7 +48,7 @@ data:
           "subturn": {
             "max_depth": 10,
             "max_concurrent": 5,
-            "default_timeout_minutes": 2,
+            "default_timeout_minutes": 10,
             "default_token_budget": 100000,
             "concurrency_timeout_sec": 10
           },
@@ -267,42 +269,50 @@ data:
         {
           "model_name": "glm-4.7",
           "model": "zhipu/glm-4.7",
-          "api_base": "https://open.bigmodel.cn/api/paas/v4"
+          "api_base": "https://open.bigmodel.cn/api/paas/v4",
+          "request_timeout": 45
         },
         {
           "model_name": "gpt-5.4",
           "model": "openai/gpt-5.4",
-          "api_base": "https://api.openai.com/v1"
+          "api_base": "https://api.openai.com/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "claude-sonnet-4.6",
           "model": "anthropic/claude-sonnet-4.6",
-          "api_base": "https://api.anthropic.com/v1"
+          "api_base": "https://api.anthropic.com/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "deepseek-chat",
           "model": "deepseek/deepseek-chat",
-          "api_base": "https://api.deepseek.com/v1"
+          "api_base": "https://api.deepseek.com/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "gemini-2.0-flash",
           "model": "gemini/gemini-2.0-flash-exp",
-          "api_base": "https://generativelanguage.googleapis.com/v1beta"
+          "api_base": "https://generativelanguage.googleapis.com/v1beta",
+          "request_timeout": 45
         },
         {
           "model_name": "qwen-plus",
           "model": "qwen/qwen-plus",
-          "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+          "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "moonshot-v1-8k",
           "model": "moonshot/moonshot-v1-8k",
-          "api_base": "https://api.moonshot.cn/v1"
+          "api_base": "https://api.moonshot.cn/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "llama-3.3-70b",
           "model": "groq/llama-3.3-70b-versatile",
-          "api_base": "https://api.groq.com/openai/v1"
+          "api_base": "https://api.groq.com/openai/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "openrouter-nemotron",
@@ -311,7 +321,8 @@ data:
           "api_base": "https://openrouter.ai/api/v1",
           "api_keys": [
             "env://NVIDIA_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "openrouter-elephant",
@@ -320,7 +331,8 @@ data:
           "api_base": "https://openrouter.ai/api/v1",
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "openrouter-free",
@@ -329,7 +341,8 @@ data:
           "api_base": "https://openrouter.ai/api/v1",
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "openrouter-auto",
@@ -338,7 +351,8 @@ data:
           "api_base": "https://openrouter.ai/api/v1",
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "openrouter-gpt-5.4",
@@ -347,7 +361,8 @@ data:
           "api_base": "https://openrouter.ai/api/v1",
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "nemotron-4-340b",
@@ -355,64 +370,76 @@ data:
           "api_base": "https://integrate.api.nvidia.com/v1",
           "api_keys": [
             "env://NVIDIA_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "azure-grok",
           "model": "openai/grok-4-fast-non-reasoning",
           "api_base": "https://TestSJF.openai.azure.com/openai/v1/",
-          "enabled": true
+          "enabled": true,
+          "request_timeout": 45
         },
         {
           "model_name": "cerebras-llama-3.3-70b",
           "model": "cerebras/llama-3.3-70b",
-          "api_base": "https://api.cerebras.ai/v1"
+          "api_base": "https://api.cerebras.ai/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "vivgrid-auto",
           "model": "vivgrid/auto",
-          "api_base": "https://api.vivgrid.com/v1"
+          "api_base": "https://api.vivgrid.com/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "ark-code-latest",
           "model": "volcengine/ark-code-latest",
-          "api_base": "https://ark.cn-beijing.volces.com/api/v3"
+          "api_base": "https://ark.cn-beijing.volces.com/api/v3",
+          "request_timeout": 45
         },
         {
           "model_name": "doubao-pro",
           "model": "volcengine/doubao-pro-32k",
-          "api_base": "https://ark.cn-beijing.volces.com/api/v3"
+          "api_base": "https://ark.cn-beijing.volces.com/api/v3",
+          "request_timeout": 45
         },
         {
           "model_name": "deepseek-v3",
           "model": "shengsuanyun/deepseek-v3",
-          "api_base": "https://api.shengsuanyun.com/v1"
+          "api_base": "https://api.shengsuanyun.com/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "copilot-gpt-5.4",
           "model": "github-copilot/gpt-5.4",
           "api_base": "http://localhost:4321",
-          "auth_method": "oauth"
+          "auth_method": "oauth",
+          "request_timeout": 45
         },
         {
           "model_name": "llama3",
           "model": "ollama/llama3",
-          "api_base": "http://localhost:11434/v1"
+          "api_base": "http://localhost:11434/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "mistral-small",
           "model": "mistral/mistral-small-latest",
-          "api_base": "https://api.mistral.ai/v1"
+          "api_base": "https://api.mistral.ai/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "deepseek-v3.2",
           "model": "avian/deepseek/deepseek-v3.2",
-          "api_base": "https://api.avian.io/v1"
+          "api_base": "https://api.avian.io/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "kimi-k2.5",
           "model": "avian/moonshotai/kimi-k2.5",
-          "api_base": "https://api.avian.io/v1"
+          "api_base": "https://api.avian.io/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "MiniMax-M2.5",
@@ -420,28 +447,33 @@ data:
           "api_base": "https://api.minimaxi.com/v1",
           "extra_body": {
             "reasoning_split": true
-          }
+          },
+          "request_timeout": 45
         },
         {
           "model_name": "LongCat-Flash-Thinking",
           "model": "longcat/LongCat-Flash-Thinking",
-          "api_base": "https://api.longcat.chat/openai"
+          "api_base": "https://api.longcat.chat/openai",
+          "request_timeout": 45
         },
         {
           "model_name": "modelscope-qwen",
           "model": "modelscope/Qwen/Qwen3-235B-A22B-Instruct-2507",
-          "api_base": "https://api-inference.modelscope.cn/v1"
+          "api_base": "https://api-inference.modelscope.cn/v1",
+          "request_timeout": 45
         },
         {
           "model_name": "local-model",
           "model": "vllm/custom-model",
           "api_base": "http://localhost:8000/v1",
-          "enabled": true
+          "enabled": true,
+          "request_timeout": 45
         },
         {
           "model_name": "azure-gpt5",
           "model": "azure/my-gpt5-deployment",
-          "api_base": "https://your-resource.openai.azure.com"
+          "api_base": "https://your-resource.openai.azure.com",
+          "request_timeout": 45
         },
         {
           "model_name": "google-gemma-4-26b-a4b-it:free",
@@ -450,7 +482,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "google-gemma-4-31b-it:free",
@@ -459,7 +492,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "nvidia-nemotron-3-super-120b-a12b:free",
@@ -468,7 +502,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://NVIDIA_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "qwen-qwen3-next-80b-a3b-instruct:free",
@@ -477,7 +512,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "nvidia-nemotron-nano-9b-v2:free",
@@ -486,7 +522,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://NVIDIA_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "openrouter-elephant-alpha",
@@ -495,7 +532,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "minimax-minimax-m2.5:free",
@@ -504,7 +542,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "arcee-ai-trinity-large-preview:free",
@@ -513,7 +552,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "google-lyria-3-pro-preview",
@@ -522,7 +562,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "google-lyria-3-clip-preview",
@@ -531,7 +572,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "nvidia-nemotron-3-nano-30b-a3b:free",
@@ -540,7 +582,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://NVIDIA_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "nvidia-nemotron-nano-12b-v2-vl:free",
@@ -549,7 +592,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://NVIDIA_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "openai-gpt-oss-120b:free",
@@ -558,7 +602,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         },
         {
           "model_name": "openai-gpt-oss-20b:free",
@@ -567,7 +612,8 @@ data:
           "enabled": true,
           "api_keys": [
             "env://OPENROUTER_API_KEY"
-          ]
+          ],
+          "request_timeout": 45
         }
       ],
       "gateway": {
