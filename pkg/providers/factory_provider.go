@@ -124,6 +124,7 @@ func isKnownProtocol(p string) bool {
 func ExtractProtocol(model string) (protocol, modelID string) {
 	model = strings.TrimSpace(model)
 	p, m, found := strings.Cut(model, "/")
+	p = strings.ToLower(strings.TrimSpace(p))
 	if !found {
 		return "openai", model
 	}
@@ -149,7 +150,7 @@ func ResolveAPIBase(cfg *config.ModelConfig) string {
 	}
 	protocol, _ := ExtractProtocol(cfg.Model)
 	if cfg.Protocol != "" {
-		protocol = cfg.Protocol
+		protocol = strings.ToLower(strings.TrimSpace(cfg.Protocol))
 	}
 	return strings.TrimRight(getDefaultAPIBase(protocol), "/")
 }
@@ -171,7 +172,7 @@ func CreateProviderFromConfig(cfg *config.ModelConfig) (LLMProvider, string, err
 
 	protocol, modelID := ExtractProtocol(cfg.Model)
 	if cfg.Protocol != "" {
-		protocol = cfg.Protocol
+		protocol = strings.ToLower(strings.TrimSpace(cfg.Protocol))
 		// If protocol was explicitly set, modelID should be the full model string
 		// unless it was already prefixed with the SAME protocol.
 		// Strip protocol prefix if it matches the model start EXCPET for nvidia

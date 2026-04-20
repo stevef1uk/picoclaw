@@ -117,6 +117,9 @@ func NewAgentInstance(
 	if cfg.Tools.IsToolEnabled("append_file") {
 		toolsRegistry.Register(tools.NewAppendFileTool(workspace, restrict, allowWritePaths))
 	}
+	if cfg.Tools.IsToolEnabled("freeride") {
+		toolsRegistry.Register(tools.NewFreeRideTool(config.GetDefaultConfigPath(), nil))
+	}
 
 	sessionsDir := filepath.Join(workspace, "sessions")
 	sessions := initSessionStore(sessionsDir)
@@ -272,7 +275,7 @@ func populateCandidateProvidersFromNames(
 		}
 
 		modelID := mc.Model
-		protocol := mc.Protocol
+		protocol := strings.ToLower(strings.TrimSpace(mc.Protocol))
 
 		// If protocol is not explicitly set, extract it from the model ID
 		if protocol == "" {

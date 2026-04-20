@@ -104,7 +104,10 @@ func main() {
 
 	for _, m := range freeModels {
 		if m.IsReachable {
-			fmt.Printf("\n🚀 SUCCESS! Use this model for testing: \n   go run cmd/picoclaw/main.go agent --model openrouter/%s\n", m.ID)
+			fmt.Printf(
+				"\n🚀 SUCCESS! Use this model for testing: \n   go run cmd/picoclaw/main.go agent --model openrouter/%s\n",
+				m.ID,
+			)
 			break
 		}
 	}

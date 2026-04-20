@@ -25,6 +25,7 @@ func NewFreerideCommand() *cobra.Command {
 		newListCommand(),
 		newAutoCommand(),
 		newStatusCommand(),
+		newSetTimeoutCommand(),
 	)
 
 	return cmd
@@ -81,4 +82,23 @@ func newStatusCommand() *cobra.Command {
 			return nil
 		},
 	}
+}
+
+func newSetTimeoutCommand() *cobra.Command {
+	var timeout int
+	cmd := &cobra.Command{
+		Use:   "settimeout",
+		Short: "Set request timeout for all OpenRouter models",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			t := tools.NewFreeRideTool(internal.GetConfigPath(), nil)
+			result := t.Execute(context.Background(), map[string]any{
+				"command": "settimeout",
+				"timeout": float64(timeout),
+			})
+			fmt.Println(result.ForLLM)
+			return nil
+		},
+	}
+	cmd.Flags().IntVarP(&timeout, "timeout", "t", 300, "Request timeout in seconds (default 300)")
+	return cmd
 }

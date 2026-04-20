@@ -46,6 +46,18 @@ func NewCooldownTracker(storagePath string) *CooldownTracker {
 	return ct
 }
 
+// SetPersistencePath sets the path for state persistence and triggers an immediate load.
+func (ct *CooldownTracker) SetPersistencePath(path string) error {
+	ct.mu.Lock()
+	ct.storagePath = path
+	ct.mu.Unlock()
+
+	if path != "" {
+		ct.Load()
+	}
+	return nil
+}
+
 // MarkFailure records a failure for a provider and sets appropriate cooldown.
 // Resets error counts if last failure was more than failureWindow ago.
 func (ct *CooldownTracker) MarkFailure(provider string, reason FailoverReason) {

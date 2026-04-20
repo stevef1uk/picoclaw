@@ -823,6 +823,7 @@ type ToolsConfig struct {
 	Subagent        ToolConfig         `json:"subagent"          yaml:"-"                                                       envPrefix:"PICOCLAW_TOOLS_SUBAGENT_"`
 	WebFetch        ToolConfig         `json:"web_fetch"         yaml:"-"                                                       envPrefix:"PICOCLAW_TOOLS_WEB_FETCH_"`
 	WriteFile       ToolConfig         `json:"write_file"        yaml:"-"                                                       envPrefix:"PICOCLAW_TOOLS_WRITE_FILE_"`
+	Freeride        ToolConfig         `json:"freeride"          yaml:"-"                                                       envPrefix:"PICOCLAW_TOOLS_FREERIDE_"`
 }
 
 // IsFilterSensitiveDataEnabled returns true if sensitive data filtering is enabled
@@ -1512,6 +1513,8 @@ func (t *ToolsConfig) IsToolEnabled(name string) bool {
 		return t.SendTTS.Enabled
 	case "write_file":
 		return t.WriteFile.Enabled
+	case "freeride":
+		return t.Freeride.Enabled
 	case "mcp":
 		return t.MCP.Enabled
 	default:

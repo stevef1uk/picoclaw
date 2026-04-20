@@ -57,6 +57,10 @@ func NewAgentLoop(
 	if defaultAgent != nil {
 		logger.Debugf("Initializing State Manager for agent %s", defaultAgent.ID)
 		stateManager = state.NewManager(defaultAgent.Workspace)
+		// Enable persistent cooldowns so that model rate limits/failures
+		// are remembered across agent restarts.
+		cooldownPath := filepath.Join(filepath.Dir(filepath.Clean(defaultAgent.Workspace)), "cooldowns.json")
+		_ = cooldown.SetPersistencePath(cooldownPath)
 	}
 
 	eventBus := NewEventBus()

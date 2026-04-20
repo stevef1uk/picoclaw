@@ -41,13 +41,18 @@ func (t *FreeRideTool) Parameters() map[string]any {
 		"properties": map[string]any{
 			"command": map[string]any{
 				"type":        "string",
-				"enum":        []string{"auto", "list", "status"},
-				"description": "The command to run: 'auto' (configures models), 'list' (shows free models), 'status' (checks current setup)",
+				"enum":        []string{"auto", "list", "status", "settimeout"},
+				"description": "The command to run: 'auto' (configures models), 'list' (shows free models), 'status' (checks current setup), 'settimeout' (sets request timeout)",
 			},
 			"limit": map[string]any{
 				"type":        "integer",
 				"description": "For 'list', how many models to show. For 'auto', how many fallbacks to configure.",
 				"default":     5,
+			},
+			"timeout": map[string]any{
+				"type":        "integer",
+				"description": "For 'settimeout', the request timeout in seconds (default 300)",
+				"default":     300,
 			},
 		},
 		"required": []string{"command"},
@@ -72,6 +77,13 @@ func (t *FreeRideTool) Execute(ctx context.Context, args map[string]any) *ToolRe
 	if l, ok := args["limit"].(float64); ok {
 		limit = int(l)
 	}
+	timeout := 300
+	switch v := args["timeout"].(type) {
+	case float64:
+		timeout = int(v)
+	case int:
+		timeout = v
+	}
 
 	switch cmd {
 	case "list":
@@ -80,6 +92,8 @@ func (t *FreeRideTool) Execute(ctx context.Context, args map[string]any) *ToolRe
 		return t.handleAuto(ctx, limit)
 	case "status":
 		return t.handleStatus()
+	case "settimeout":
+		return t.handleSetTimeout(timeout)
 	default:
 		return ErrorResult(fmt.Sprintf("unknown command: %s", cmd))
 	}
@@ -178,7 +192,17 @@ func scoreModel(m openRouterModel) float64 {
 	}
 
 	// Provider Trust (10%) - hardcoded list of trusted names
-	trustNames := []string{"google", "meta", "nvidia", "mistral", "anthropic", "openai", "microsoft", "qwen", "deepseek"}
+	trustNames := []string{
+		"google",
+		"meta",
+		"nvidia",
+		"mistral",
+		"anthropic",
+		"openai",
+		"microsoft",
+		"qwen",
+		"deepseek",
+	}
 	for _, name := range trustNames {
 		if strings.Contains(strings.ToLower(m.ID), name) {
 			score += 0.1
@@ -210,7 +234,7 @@ func (t *FreeRideTool) handleList(ctx context.Context, limit int) *ToolResult {
 		sb.WriteString(fmt.Sprintf("   Parameters: %s\n\n", strings.Join(m.SupportedParameters, ", ")))
 	}
 
-	return UserResult(sb.String()).WithResponseHandled().WithResponseHandled()
+	return UserResult(sb.String())
 }
 
 func (t *FreeRideTool) handleAuto(ctx context.Context, limit int) *ToolResult {
@@ -229,7 +253,8 @@ func (t *FreeRideTool) handleAuto(ctx context.Context, limit int) *ToolResult {
 	}
 
 	// 1. Add models to ModelList if not present
-	var addedModels []string
+	// 2. Collect all valid free models for fallbacks (new AND existing)
+	var fallbackModels []string
 	for i, m := range models {
 		if i >= limit {
 			break
@@ -244,14 +269,14 @@ func (t *FreeRideTool) handleAuto(ctx context.Context, limit int) *ToolResult {
 			}
 			mc.SetAPIKey("env://OPENROUTER_API_KEY")
 			cfgObj.ModelList = append(cfgObj.ModelList, mc)
-			addedModels = append(addedModels, modelName)
 		}
+		fallbackModels = append(fallbackModels, modelName)
 	}
 
 	// 2. Set fallbacks for the default agent
-	if len(addedModels) > 0 {
+	if len(fallbackModels) > 0 {
 		// Update AgentDefaults fallbacks
-		cfgObj.Agents.Defaults.ModelFallbacks = append(cfgObj.Agents.Defaults.ModelFallbacks, addedModels...)
+		cfgObj.Agents.Defaults.ModelFallbacks = append(cfgObj.Agents.Defaults.ModelFallbacks, fallbackModels...)
 		// Deduplicate fallbacks
 		cfgObj.Agents.Defaults.ModelFallbacks = uniqueStrings(cfgObj.Agents.Defaults.ModelFallbacks)
 
@@ -259,7 +284,11 @@ func (t *FreeRideTool) handleAuto(ctx context.Context, limit int) *ToolResult {
 			return ErrorResult(fmt.Errorf("failed to save config: %w", err).Error())
 		}
 
-		msg := fmt.Sprintf("Success! Added %d free models as fallbacks: %s.\n", len(addedModels), strings.Join(addedModels, ", "))
+		msg := fmt.Sprintf(
+			"Success! Added %d free models as fallbacks: %s.\n",
+			len(fallbackModels),
+			strings.Join(fallbackModels, ", "),
+		)
 		msg += "Re-loading configuration to apply changes..."
 
 		if t.reloadFunc != nil {
@@ -268,10 +297,12 @@ func (t *FreeRideTool) handleAuto(ctx context.Context, limit int) *ToolResult {
 			}
 		}
 
-		return UserResult(msg).WithResponseHandled().WithResponseHandled()
+		return UserResult(msg)
 	}
 
-	return UserResult("No new free models to add. Your configuration is up to date.").WithResponseHandled().WithResponseHandled()
+	return UserResult(
+		"No new free models to add. Your configuration is up to date.",
+	)
 }
 
 func (t *FreeRideTool) handleStatus() *ToolResult {
@@ -294,7 +325,47 @@ func (t *FreeRideTool) handleStatus() *ToolResult {
 	}
 	sb.WriteString(fmt.Sprintf("- Managed Free Models: %d\n", openRouterCount))
 
-	return UserResult(sb.String()).WithResponseHandled().WithResponseHandled()
+	return UserResult(sb.String())
+}
+
+func (t *FreeRideTool) handleSetTimeout(timeoutSeconds int) *ToolResult {
+	if timeoutSeconds < 30 {
+		return ErrorResult("timeout must be at least 30 seconds")
+	}
+
+	cfgObj, err := config.LoadConfig(t.configPath)
+	if err != nil {
+		return ErrorResult(fmt.Errorf("failed to load config: %w", err).Error())
+	}
+
+	updated := 0
+	for _, mc := range cfgObj.ModelList {
+		// Only update OpenRouter models (free models)
+		protocol := strings.ToLower(mc.Protocol)
+		if protocol == "openrouter" {
+			mc.RequestTimeout = timeoutSeconds
+			updated++
+		}
+	}
+
+	if updated == 0 {
+		return ErrorResult("no OpenRouter models found in config. Run 'freeride auto' first.")
+	}
+
+	if err := config.SaveConfig(t.configPath, cfgObj); err != nil {
+		return ErrorResult(fmt.Errorf("failed to save config: %w", err).Error())
+	}
+
+	msg := fmt.Sprintf("Set request timeout to %d seconds for %d OpenRouter models.\n", timeoutSeconds, updated)
+	msg += "Re-loading configuration to apply changes..."
+
+	if t.reloadFunc != nil {
+		if err := t.reloadFunc(); err != nil {
+			return ErrorResult(fmt.Sprintf("%s\nFailed to reload: %v", msg, err))
+		}
+	}
+
+	return UserResult(msg)
 }
 
 func modelExists(cfg *config.Config, modelName string) bool {
@@ -308,8 +379,13 @@ func modelExists(cfg *config.Config, modelName string) bool {
 
 func isKnownOpenRouterAlias(cfg *config.Config, modelName string) bool {
 	for _, m := range cfg.ModelList {
-		if m.ModelName == modelName && strings.HasPrefix(m.Model, "openrouter/") {
-			return true
+		if m.ModelName == modelName {
+			if strings.HasPrefix(m.Model, "openrouter/") {
+				return true
+			}
+			if strings.ToLower(m.Protocol) == "openrouter" {
+				return true
+			}
 		}
 	}
 	return false

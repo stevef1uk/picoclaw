@@ -65,6 +65,12 @@ Shows your current primary model and the active fallback rotation pool.
 ### `freeride list [limit]`
 Displays the current top-ranked free models available on OpenRouter without modifying your configuration.
 
+### `freeride settimeout [seconds]`
+Sets the request timeout for all OpenRouter models. Default is 300 seconds (5 minutes). Use this if you need longer timeouts for complex tasks:
+```bash
+picoclaw freeride settimeout 600  # 10 minutes
+```
+
 ## K3s Deployment & Secrets
 
 When running PicoClaw on K3s, follow these steps to manage your secrets safely.
@@ -106,8 +112,8 @@ To prevent the agent from "hanging" or retrying known-failed models, PicoClaw us
 ### 1. Zero-Amnesia Persistence
 Model failures (e.g., 429 Rate Limits) are saved to `~/.picoclaw/cooldowns.json`. This ensures that if you restart the agent, it **remembers** which models were saturated and skips them instantly. You no longer have to wait through a series of timeouts every time you restart.
  
-### 2. Aggressive 30s Timeout
-The default request timeout for LLM calls is **30 seconds**. If a free model is stalled or unresponsive, the agent will move to the next fallback in your pool much faster than the standard HTTP default.
+### 2. Generous 5 Minute Timeout
+The default request timeout for LLM calls is **300 seconds (5 minutes)**. Free models can be slower than paid ones, and complex agentic tasks (multi-step reasoning, file operations, debugging) need time to complete. If a free model truly can't handle the request, it will return an error rather than hanging indefinitely - allowing the agent to fail over to the next fallback.
  
 ## Troubleshooting
 
