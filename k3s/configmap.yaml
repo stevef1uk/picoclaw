@@ -23,7 +23,7 @@ data:
             "/tmp"
           ],
           "provider": "nvidia",
-          "model_name": "nvidia-nemotron-70b",
+          "model_name": "nemotron-120b",
           "model_fallbacks": [
             "meta-llama-llama-3.3-70b-instruct:free",
             "qwen-qwen3-coder:free",
@@ -499,8 +499,19 @@ data:
           "request_timeout": 45
         },
         {
+          "model_name": "nemotron-120b",
+          "model": "nvidia/nemotron-3-super-120b-a12b",
+          "protocol": "nvidia",
+          "api_base": "https://integrate.api.nvidia.com/v1",
+          "enabled": true,
+          "api_keys": [
+            "env://NVIDIA_API_KEY"
+          ],
+          "request_timeout": 60
+        },
+        {
           "model_name": "nvidia-nemotron-70b",
-          "model": "meta/llama-3.1-nemotron-70b-instruct",
+          "model": "nvidia/llama-3.1-nemotron-70b-instruct",
           "protocol": "nvidia",
           "api_base": "https://integrate.api.nvidia.com/v1",
           "enabled": true,
