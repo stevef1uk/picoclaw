@@ -27,6 +27,7 @@ import (
 	"github.com/sipeed/picoclaw/cmd/picoclaw/internal/status"
 	"github.com/sipeed/picoclaw/cmd/picoclaw/internal/version"
 	"github.com/sipeed/picoclaw/pkg/config"
+	"github.com/sipeed/picoclaw/pkg/security"
 	"github.com/sipeed/picoclaw/pkg/updater"
 )
 
@@ -121,6 +122,7 @@ const (
 )
 
 func main() {
+	security.Init()
 	cliui.Init(earlyColorDisabled())
 
 	if earlyColorDisabled() {

@@ -632,7 +632,9 @@ func runInterceptorHook[T any](
 	}
 	done := make(chan result, 1)
 	go func() {
+		logger.DebugCF("hooks", "Executing interceptor hook", map[string]any{"hook": name, "stage": stage})
 		value, decision, err := fn(ctx)
+		logger.DebugCF("hooks", "Interceptor hook finished", map[string]any{"hook": name, "stage": stage})
 		done <- result{value: value, decision: decision, err: err}
 	}()
 
@@ -673,7 +675,9 @@ func runApprovalHook(
 	}
 	done := make(chan result, 1)
 	go func() {
+		logger.DebugCF("hooks", "Executing approval hook", map[string]any{"hook": name, "stage": stage})
 		decision, err := fn(ctx)
+		logger.DebugCF("hooks", "Approval hook finished", map[string]any{"hook": name, "stage": stage})
 		done <- result{decision: decision, err: err}
 	}()
 
