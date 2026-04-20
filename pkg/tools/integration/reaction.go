@@ -81,7 +81,8 @@ func (t *ReactionTool) Execute(ctx context.Context, args map[string]any) *ToolRe
 	}
 
 	return &ToolResult{
-		ForLLM: fmt.Sprintf("Reaction added to %s:%s message %s", channel, chatID, messageID),
-		Silent: true,
+		ForLLM:          fmt.Sprintf("Reaction added to %s:%s message %s", channel, chatID, messageID),
+		Silent:          true,
+		ResponseHandled: true,
 	}
 }

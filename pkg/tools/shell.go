@@ -41,7 +41,7 @@ type ExecTool struct {
 	allowPatterns       []*regexp.Regexp
 	customAllowPatterns []*regexp.Regexp
 	allowedPathPatterns []*regexp.Regexp
-	denyWritePaths    []*regexp.Regexp
+	denyWritePaths      []*regexp.Regexp
 	restrictToWorkspace bool
 	allowRemote         bool
 	sessionManager      *SessionManager
