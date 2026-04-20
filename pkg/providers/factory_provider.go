@@ -58,6 +58,29 @@ var protocolMetaByName = map[string]protocolMeta{
 	"longcat":                  {defaultAPIBase: "https://api.longcat.chat/openai"},
 	"modelscope":               {defaultAPIBase: "https://api-inference.modelscope.cn/v1"},
 	"mimo":                     {defaultAPIBase: "https://api.xiaomimimo.com/v1"},
+
+	// Specialty and Custom Protocols
+	"anthropic":           {defaultAPIBase: "https://api.anthropic.com"},
+	"google":              {defaultAPIBase: "https://openrouter.ai/api/v1"}, // Alias for OpenRouter/OpenAI-compatible
+	"elevenlabs":          {},
+	"claude-cli":          {},
+	"codex-cli":           {},
+	"antigravity":         {},
+	"cli":                 {},
+	"fs":                  {},
+	"memory":              {},
+	"dummy":               {},
+	"openai-tts":          {},
+	"gpt-4-v":             {defaultAPIBase: "https://api.openai.com/v1"},
+	"gpt-4o":              {defaultAPIBase: "https://api.openai.com/v1"},
+	"gpt-4-turbo":         {defaultAPIBase: "https://api.openai.com/v1"},
+	"azure":               {},
+	"azure-openai":        {},
+	"bedrock":             {},
+	"github-copilot":      {},
+	"github-copilot-chat": {},
+	"copilot":             {},
+	"claude":              {defaultAPIBase: "https://api.anthropic.com"},
 }
 
 // createClaudeAuthProvider creates a Claude provider using OAuth credentials from auth store.
@@ -88,15 +111,15 @@ func createCodexAuthProvider() (LLMProvider, error) {
 // If no prefix is specified, it defaults to "openai".
 // Examples:
 //   - "openai/gpt-4o" -> ("openai", "gpt-4o")
-//   - "anthropic/claude-sonnet-4.6" -> ("anthropic", "claude-sonnet-4.6")
-//   - "gpt-4o" -> ("openai", "gpt-4o")  // default protocol
+//   - "anthropic/claude-3-opus" -> ("anthropic", "claude-3-opus")
+//   - "gpt-4o" -> ("openai", "gpt-4o")
 func ExtractProtocol(model string) (protocol, modelID string) {
 	model = strings.TrimSpace(model)
-	protocol, modelID, found := strings.Cut(model, "/")
+	p, m, found := strings.Cut(model, "/")
 	if !found {
 		return "openai", model
 	}
-	return protocol, modelID
+	return p, m
 }
 
 // ResolveAPIBase returns the configured API base, or the protocol default when
@@ -133,7 +156,13 @@ func CreateProviderFromConfig(cfg *config.ModelConfig) (LLMProvider, string, err
 	protocol, modelID := ExtractProtocol(cfg.Model)
 	if cfg.Protocol != "" {
 		protocol = cfg.Protocol
-		modelID = cfg.Model
+		// If protocol was explicitly set, modelID should be the full model string
+		// unless it was already prefixed with the SAME protocol.
+		if p, m, found := strings.Cut(cfg.Model, "/"); found && strings.EqualFold(p, protocol) {
+			modelID = m
+		} else {
+			modelID = cfg.Model
+		}
 	}
 
 	userAgent := cfg.UserAgent

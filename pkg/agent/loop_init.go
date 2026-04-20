@@ -26,11 +26,20 @@ func NewAgentLoop(
 	msgBus *bus.MessageBus,
 	provider providers.LLMProvider,
 ) *AgentLoop {
+	logger.Debug("Initializing AgentRegistry...")
 	registry := NewAgentRegistry(cfg, provider)
 
 	// Set up shared fallback chain with rate limiting.
-	cooldownPath := filepath.Join(filepath.Dir(filepath.Clean(registry.GetDefaultAgent().Workspace)), "cooldowns.json")
+	// Harden: ensure we have a valid workspace for the cooldown file even if the default agent isn't ready.
+	baseDir := filepath.Dir(configPath)
+	if defaultAgent := registry.GetDefaultAgent(); defaultAgent != nil {
+		baseDir = filepath.Dir(filepath.Clean(defaultAgent.Workspace))
+	}
+
+	cooldownPath := filepath.Join(baseDir, "cooldowns.json")
+	logger.Debugf("Initializing CooldownTracker at %s", cooldownPath)
 	cooldown := providers.NewCooldownTracker(cooldownPath)
+
 	rl := providers.NewRateLimiterRegistry()
 	// Register rate limiters for all agents' candidates so that RPM limits
 	// configured in ModelConfig are enforced before each LLM call.
@@ -46,6 +55,7 @@ func NewAgentLoop(
 	defaultAgent := registry.GetDefaultAgent()
 	var stateManager *state.Manager
 	if defaultAgent != nil {
+		logger.Debugf("Initializing State Manager for agent %s", defaultAgent.ID)
 		stateManager = state.NewManager(defaultAgent.Workspace)
 	}
 

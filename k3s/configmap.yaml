@@ -622,7 +622,7 @@ data:
         "api_key": "picoclaw-secret-123",
         "chat_enabled": true,
         "hot_reload": true,
-        "log_level": "info"
+        "log_level": "debug"
       },
       "hooks": {
         "enabled": true,
