@@ -368,6 +368,7 @@ turnLoop:
 			defer al.activeRequests.Done()
 
 			if len(activeCandidates) > 1 && al.fallback != nil {
+				logger.DebugCF("agent", "Executing fallback chain", map[string]any{"candidates_count": len(activeCandidates)})
 				fbResult, fbErr := al.fallback.Execute(
 					providerCtx,
 					activeCandidates,
@@ -376,6 +377,7 @@ turnLoop:
 						if cp, ok := ts.agent.CandidateProviders[providers.ModelKey(provider, model)]; ok {
 							candidateProvider = cp
 						}
+						logger.DebugCF("agent", "Fallback attempt", map[string]any{"provider": provider, "model": model})
 						return candidateProvider.Chat(ctx, messagesForCall, toolDefsForCall, model, llmOpts)
 					},
 				)
@@ -397,7 +399,14 @@ turnLoop:
 				}
 				return fbResult.Response, nil
 			}
-			return activeProvider.Chat(providerCtx, messagesForCall, toolDefsForCall, llmModel, llmOpts)
+			logger.DebugCF("agent", "Calling LLM provider Chat", map[string]any{"model": llmModel})
+			resp, err := activeProvider.Chat(providerCtx, messagesForCall, toolDefsForCall, llmModel, llmOpts)
+			if err != nil {
+				logger.ErrorCF("agent", "LLM provider Chat failed", map[string]any{"model": llmModel, "error": err.Error()})
+			} else {
+				logger.DebugCF("agent", "LLM provider Chat succeeded", map[string]any{"model": llmModel})
+			}
+			return resp, err
 		}
 
 		var response *providers.LLMResponse
