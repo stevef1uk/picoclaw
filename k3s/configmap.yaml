@@ -14,14 +14,6 @@ data:
         "defaults": {
           "workspace": "/home/picoclaw/.picoclaw",
           "restrict_to_workspace": true,
-          "allow_read_paths": [
-            "/home/picoclaw/.picoclaw",
-            "/tmp"
-          ],
-          "allow_write_paths": [
-            "/home/picoclaw/.picoclaw",
-            "/tmp"
-          ],
           "provider": "nvidia",
           "model_name": "nemotron-120b",
           "model_fallbacks": [
@@ -729,8 +721,14 @@ data:
         }
       },
       "tools": {
-        "allow_read_paths": null,
-        "allow_write_paths": null,
+        "allow_read_paths": [
+          "/home/picoclaw/.picoclaw",
+          "/tmp"
+        ],
+        "allow_write_paths": [
+          "/home/picoclaw/.picoclaw",
+          "/tmp"
+        ],
         "deny_read_paths": [
           "^skills(/.*)?$"
         ],

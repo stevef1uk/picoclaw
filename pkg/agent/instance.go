@@ -307,7 +307,7 @@ func resolveAgentWorkspace(agentCfg *config.AgentConfig, defaults *config.AgentD
 	}
 	// For named agents without explicit workspace, use default workspace with agent ID suffix
 	id := routing.NormalizeAgentID(agentCfg.ID)
-	return filepath.Join(expandHome(defaults.Workspace), "..", "workspace-"+id)
+	return filepath.Join(expandHome(defaults.Workspace), "workspaces", id)
 }
 
 // resolveAgentModel resolves the primary model for an agent.
