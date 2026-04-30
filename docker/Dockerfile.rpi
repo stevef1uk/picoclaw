@@ -36,6 +36,7 @@ RUN apk add --no-cache \
   ca-certificates \
   openssh-client \
   bash \
+  git \
   tzdata && \
   update-ca-certificates
 
