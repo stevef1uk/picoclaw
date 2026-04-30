@@ -249,7 +249,7 @@ func registerSharedTools(
 		// Skill discovery and installation tools
 		skills_enabled := cfg.Tools.IsToolEnabled("skills")
 		if skills_enabled {
-			agent.Tools.Register(tools.NewFreeRideTool(al.GetConfigPath(), al.GetReloadFunc()))
+			agent.Tools.Register(tools.NewFreeRideTool(al.GetConfigPath(), al.cooldownPath, al.GetReloadFunc()))
 		}
 
 		find_skills_enable := cfg.Tools.IsToolEnabled("find_skills")

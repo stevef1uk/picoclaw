@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -15,14 +16,16 @@ import (
 // FreeRideTool adapts the FreeRide logic (from clawhub/free-ride) for PicoClaw.
 // It manages OpenRouter's free models and configures them as fallbacks.
 type FreeRideTool struct {
-	configPath string
-	reloadFunc func() error
+	configPath   string
+	cooldownPath string
+	reloadFunc   func() error
 }
 
-func NewFreeRideTool(configPath string, reloadFunc func() error) *FreeRideTool {
+func NewFreeRideTool(configPath, cooldownPath string, reloadFunc func() error) *FreeRideTool {
 	return &FreeRideTool{
-		configPath: configPath,
-		reloadFunc: reloadFunc,
+		configPath:   configPath,
+		cooldownPath: cooldownPath,
+		reloadFunc:   reloadFunc,
 	}
 }
 
@@ -41,8 +44,8 @@ func (t *FreeRideTool) Parameters() map[string]any {
 		"properties": map[string]any{
 			"command": map[string]any{
 				"type":        "string",
-				"enum":        []string{"auto", "list", "status", "settimeout"},
-				"description": "The command to run: 'auto' (configures models), 'list' (shows free models), 'status' (checks current setup), 'settimeout' (sets request timeout)",
+				"enum":        []string{"auto", "list", "status", "settimeout", "clear"},
+				"description": "The command to run: 'auto' (configures models), 'list' (shows free models), 'status' (checks current setup), 'settimeout' (sets request timeout), 'clear' (resets model cooldowns)",
 			},
 			"limit": map[string]any{
 				"type":        "integer",
@@ -94,9 +97,37 @@ func (t *FreeRideTool) Execute(ctx context.Context, args map[string]any) *ToolRe
 		return t.handleStatus()
 	case "settimeout":
 		return t.handleSetTimeout(timeout)
+	case "clear":
+		return t.handleClear()
 	default:
 		return ErrorResult(fmt.Sprintf("unknown command: %s", cmd))
 	}
+}
+
+func (t *FreeRideTool) handleClear() *ToolResult {
+	if t.cooldownPath == "" {
+		return ErrorResult("cooldown path not configured")
+	}
+
+	// Double-check: does the file exist?
+	if _, err := os.Stat(t.cooldownPath); os.IsNotExist(err) {
+		return UserResult("Cooldowns are already empty (no file found).")
+	}
+
+	if err := os.Remove(t.cooldownPath); err != nil {
+		return ErrorResult(fmt.Sprintf("failed to delete cooldown file: %v", err))
+	}
+
+	msg := "Success! Cooldown state cleared from disk.\n"
+	msg += "Re-loading configuration to reset in-memory state..."
+
+	if t.reloadFunc != nil {
+		if err := t.reloadFunc(); err != nil {
+			return ErrorResult(fmt.Sprintf("%s\nFailed to reload: %v", msg, err))
+		}
+	}
+
+	return UserResult(msg)
 }
 
 func (t *FreeRideTool) fetchFreeModels(ctx context.Context) ([]openRouterModel, error) {

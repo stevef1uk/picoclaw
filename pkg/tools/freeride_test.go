@@ -51,7 +51,7 @@ func TestFreeRideTool_List(t *testing.T) {
 	http.DefaultClient.Transport = &mockTransport{server.URL}
 	defer func() { http.DefaultClient.Transport = oldTransport }()
 
-	tool := NewFreeRideTool("config.json", nil)
+	tool := NewFreeRideTool("config.json", "", nil)
 	result := tool.Execute(context.Background(), map[string]any{
 		"command": "list",
 	})
@@ -124,7 +124,7 @@ func TestFreeRideTool_Auto(t *testing.T) {
 		return nil
 	}
 
-	tool := NewFreeRideTool(configPath, reloadFunc)
+	tool := NewFreeRideTool(configPath, "", reloadFunc)
 	result := tool.Execute(context.Background(), map[string]any{
 		"command": "auto",
 	})
@@ -195,7 +195,7 @@ func TestFreeRideTool_SetTimeout(t *testing.T) {
 		return nil
 	}
 
-	tool := NewFreeRideTool(configPath, reloadFunc)
+	tool := NewFreeRideTool(configPath, "", reloadFunc)
 	result := tool.Execute(context.Background(), map[string]any{
 		"command": "settimeout",
 		"timeout": 180,
@@ -250,7 +250,7 @@ func TestFreeRideTool_SetTimeout_NoOpenRouterModels(t *testing.T) {
 		t.Fatalf("failed to save initial config: %v", err)
 	}
 
-	tool := NewFreeRideTool(configPath, nil)
+	tool := NewFreeRideTool(configPath, "", nil)
 	result := tool.Execute(context.Background(), map[string]any{
 		"command": "settimeout",
 		"timeout": 180,
@@ -287,7 +287,7 @@ func TestFreeRideTool_SetTimeout_MinimumTooLow(t *testing.T) {
 		t.Fatalf("failed to save initial config: %v", err)
 	}
 
-	tool := NewFreeRideTool(configPath, nil)
+	tool := NewFreeRideTool(configPath, "", nil)
 	result := tool.Execute(context.Background(), map[string]any{
 		"command": "settimeout",
 		"timeout": 20, // too low
@@ -299,6 +299,46 @@ func TestFreeRideTool_SetTimeout_MinimumTooLow(t *testing.T) {
 
 	if !contains(result.ForLLM, "at least 30") {
 		t.Errorf("Expected error message about minimum 30 seconds, got %s", result.ForLLM)
+	}
+}
+
+func TestFreeRideTool_Clear(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "freeride-clear-test")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	configPath := filepath.Join(tempDir, "config.json")
+	cooldownPath := filepath.Join(tempDir, "cooldowns.json")
+
+	// Create a dummy cooldown file
+	if err := os.WriteFile(cooldownPath, []byte("{}"), 0644); err != nil {
+		t.Fatalf("failed to create dummy cooldown file: %v", err)
+	}
+
+	var reloadCalled bool
+	reloadFunc := func() error {
+		reloadCalled = true
+		return nil
+	}
+
+	tool := NewFreeRideTool(configPath, cooldownPath, reloadFunc)
+	result := tool.Execute(context.Background(), map[string]any{
+		"command": "clear",
+	})
+
+	if result.IsError {
+		t.Fatalf("Expected no error, got %s", result.ForLLM)
+	}
+
+	if !reloadCalled {
+		t.Errorf("Expected reloadFunc to be called")
+	}
+
+	// Verify file is gone
+	if _, err := os.Stat(cooldownPath); !os.IsNotExist(err) {
+		t.Errorf("Expected cooldown file to be deleted, but it still exists")
 	}
 }
 
