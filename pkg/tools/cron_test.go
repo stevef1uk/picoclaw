@@ -71,8 +71,8 @@ func newTestCronTool(t *testing.T) *CronTool {
 	return newTestCronToolWithConfig(t, config.DefaultConfig())
 }
 
-// TestCronTool_CommandBlockedFromRemoteChannel verifies command scheduling is restricted to internal channels
-func TestCronTool_CommandBlockedFromRemoteChannel(t *testing.T) {
+// TestCronTool_CommandAllowedFromRemoteChannelWithConfirm verifies command scheduling is allowed from remote channels with confirm
+func TestCronTool_CommandAllowedFromRemoteChannelWithConfirm(t *testing.T) {
 	tool := newTestCronTool(t)
 	ctx := WithToolContext(context.Background(), "telegram", "chat-1")
 	result := tool.Execute(ctx, map[string]any{
@@ -83,11 +83,30 @@ func TestCronTool_CommandBlockedFromRemoteChannel(t *testing.T) {
 		"at_seconds":      float64(60),
 	})
 
-	if !result.IsError {
-		t.Fatal("expected command scheduling to be blocked from remote channel")
+	if result.IsError {
+		t.Fatalf("expected command scheduling with confirm to succeed from remote channel, got: %s", result.ForLLM)
 	}
-	if !strings.Contains(result.ForLLM, "restricted to internal channels") {
-		t.Errorf("expected 'restricted to internal channels', got: %s", result.ForLLM)
+	if !strings.Contains(result.ForLLM, "Cron job added") {
+		t.Errorf("expected 'Cron job added', got: %s", result.ForLLM)
+	}
+}
+
+// TestCronTool_CommandBlockedFromRemoteChannelWithoutConfirm verifies command scheduling is blocked from remote channels without confirm
+func TestCronTool_CommandBlockedFromRemoteChannelWithoutConfirm(t *testing.T) {
+	tool := newTestCronTool(t)
+	ctx := WithToolContext(context.Background(), "telegram", "chat-1")
+	result := tool.Execute(ctx, map[string]any{
+		"action":     "add",
+		"message":    "check disk",
+		"command":    "df -h",
+		"at_seconds": float64(60),
+	})
+
+	if !result.IsError {
+		t.Fatal("expected command scheduling without confirm to be blocked from remote channel")
+	}
+	if !strings.Contains(result.ForLLM, "command_confirm=true is required") {
+		t.Errorf("expected 'command_confirm=true is required', got: %s", result.ForLLM)
 	}
 }
 

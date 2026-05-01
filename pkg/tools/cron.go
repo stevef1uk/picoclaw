@@ -201,11 +201,21 @@ func (t *CronTool) addJob(ctx context.Context, args map[string]any) *ToolResult 
 		if !t.execEnabled {
 			return ErrorResult("command execution is disabled")
 		}
-		if !constants.IsInternalChannel(channel) {
-			return ErrorResult("scheduling command execution is restricted to internal channels")
-		}
-		if !t.allowCommand && !commandConfirm {
-			return ErrorResult("command_confirm=true is required when allow_command is disabled")
+
+		isInternal := constants.IsInternalChannel(channel)
+		if !isInternal {
+			// External channel: require BOTH allow_command=true in config AND command_confirm=true in arguments
+			if !t.allowCommand {
+				return ErrorResult("scheduling command execution is restricted to internal channels (allow_command is disabled)")
+			}
+			if !commandConfirm {
+				return ErrorResult("command_confirm=true is required for scheduling commands from external channels")
+			}
+		} else {
+			// Internal channel: require command_confirm=true ONLY if allow_command is disabled in config
+			if !t.allowCommand && !commandConfirm {
+				return ErrorResult("command_confirm=true is required when allow_command is disabled")
+			}
 		}
 	}
 
