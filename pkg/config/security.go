@@ -136,7 +136,7 @@ func applyLegacySkillsSecurityNode(cfg *Config, skillsNode *yaml.Node) error {
 		}
 
 		name := strings.TrimSpace(nameNode.Value)
-		if name == "" || name == "registries" {
+		if name == "" || name == "registries" || name == "enabled" || valueNode.Kind != yaml.MappingNode {
 			continue
 		}
 

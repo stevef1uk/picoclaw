@@ -70,12 +70,10 @@ func (h *Handler) handleUpdateConfig(w http.ResponseWriter, r *http.Request) {
 		cfg.Tools.Exec.AllowRemote = config.DefaultConfig().Tools.Exec.AllowRemote
 	}
 
-	// Load existing config and copy security credentials before validation,
-	// so that security-managed fields (e.g. pico token) are available.
-	err = cfg.SecurityCopyFrom(h.configPath)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to apply security config: %v", err), http.StatusInternalServerError)
-		return
+	// Restore security fields (tokens/keys) from the loaded config before validation
+	existingCfg, err := config.LoadConfig(h.configPath)
+	if err == nil {
+		config.CopySecrets(existingCfg, &cfg)
 	}
 	applyConfigSecretsFromMap(&cfg, raw)
 
@@ -170,10 +168,7 @@ func (h *Handler) handlePatchConfig(w http.ResponseWriter, r *http.Request) {
 
 	// Restore security fields (tokens/keys) from the loaded config before validation,
 	// because private fields are lost during JSON round-trip.
-	if err = newCfg.SecurityCopyFrom(h.configPath); err != nil {
-		http.Error(w, fmt.Sprintf("Failed to apply security config: %v", err), http.StatusInternalServerError)
-		return
-	}
+	config.CopySecrets(cfg, &newCfg)
 	applyConfigSecretsFromMap(&newCfg, base)
 
 	if errs := validateConfig(&newCfg); len(errs) > 0 {

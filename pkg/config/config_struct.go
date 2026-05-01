@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"sort"
 	"strings"
@@ -728,4 +729,126 @@ func (v SkillsRegistriesConfig) MarshalYAML() (any, error) {
 	}
 
 	return mm, nil
+}
+
+// CopySecrets recursively copies SecureString and SecureStrings values from src to dst.
+// Both src and dst must be pointers to the same struct type.
+func CopySecrets(src, dst any) {
+	srcVal := reflect.ValueOf(src)
+	dstVal := reflect.ValueOf(dst)
+
+	if srcVal.Kind() == reflect.Ptr {
+		srcVal = srcVal.Elem()
+	}
+	if dstVal.Kind() == reflect.Ptr {
+		dstVal = dstVal.Elem()
+	}
+
+	if srcVal.Kind() != reflect.Struct || dstVal.Kind() != reflect.Struct {
+		return
+	}
+
+	for i := 0; i < srcVal.NumField(); i++ {
+		srcField := srcVal.Field(i)
+		dstField := dstVal.Field(i)
+
+		if !dstField.CanSet() {
+			continue
+		}
+
+		switch srcField.Type() {
+		case reflect.TypeOf(SecureString{}):
+			s := srcField.Interface().(SecureString)
+			if s.raw != "" || s.resolved != "" {
+				dstField.Set(srcField)
+			}
+		case reflect.TypeOf(&SecureString{}):
+			if !srcField.IsNil() {
+				s := srcField.Interface().(*SecureString)
+				if s.raw != "" || s.resolved != "" {
+					dstField.Set(srcField)
+				}
+			}
+		case reflect.TypeOf(SecureStrings{}):
+			if !srcField.IsNil() {
+				dstField.Set(srcField)
+			}
+		default:
+			if srcField.Kind() == reflect.Struct {
+				// Special case for Channel struct which uses unexported 'extend' for decoded settings
+				if srcField.Type() == reflect.TypeOf(Channel{}) {
+					srcChan := srcField.Addr().Interface().(*Channel)
+					dstChan := dstField.Addr().Interface().(*Channel)
+					srcDecoded, _ := srcChan.GetDecoded()
+					dstDecoded, _ := dstChan.GetDecoded()
+					if srcDecoded != nil && dstDecoded != nil {
+						CopySecrets(srcDecoded, dstDecoded)
+					}
+				}
+				CopySecrets(srcField.Addr().Interface(), dstField.Addr().Interface())
+			} else if srcField.Kind() == reflect.Ptr && !srcField.IsNil() && srcField.Elem().Kind() == reflect.Struct {
+				// Special case for *Channel
+				if srcField.Type() == reflect.TypeOf(&Channel{}) {
+					srcChan := srcField.Interface().(*Channel)
+					if dstField.IsNil() {
+						dstField.Set(reflect.New(srcField.Type().Elem()))
+					}
+					dstChan := dstField.Interface().(*Channel)
+					srcDecoded, _ := srcChan.GetDecoded()
+					dstDecoded, _ := dstChan.GetDecoded()
+					if srcDecoded != nil && dstDecoded != nil {
+						CopySecrets(srcDecoded, dstDecoded)
+					}
+				}
+				if dstField.IsNil() {
+					dstField.Set(reflect.New(srcField.Type().Elem()))
+				}
+				CopySecrets(srcField.Interface(), dstField.Interface())
+			} else if srcField.Kind() == reflect.Map {
+				if dstField.IsNil() {
+					dstField.Set(reflect.MakeMap(srcField.Type()))
+				}
+				for _, key := range srcField.MapKeys() {
+					srcMapVal := srcField.MapIndex(key)
+					dstMapVal := dstField.MapIndex(key)
+
+					if srcMapVal.Kind() == reflect.Ptr && !srcMapVal.IsNil() && srcMapVal.Elem().Kind() == reflect.Struct {
+						if !dstMapVal.IsValid() || dstMapVal.IsNil() {
+							dstMapVal = reflect.New(srcMapVal.Type().Elem())
+						}
+						// Special case for *Channel in Map
+						if srcMapVal.Type() == reflect.TypeOf(&Channel{}) {
+							srcChan := srcMapVal.Interface().(*Channel)
+							dstChan := dstMapVal.Interface().(*Channel)
+							srcDecoded, _ := srcChan.GetDecoded()
+							dstDecoded, _ := dstChan.GetDecoded()
+							if srcDecoded != nil && dstDecoded != nil {
+								CopySecrets(srcDecoded, dstDecoded)
+							}
+						}
+						CopySecrets(srcMapVal.Interface(), dstMapVal.Interface())
+						dstField.SetMapIndex(key, dstMapVal)
+					} else if srcMapVal.Kind() == reflect.Struct {
+						if !dstMapVal.IsValid() {
+							dstMapVal = reflect.New(srcMapVal.Type()).Elem()
+						}
+						CopySecrets(srcMapVal.Addr().Interface(), dstMapVal.Addr().Interface())
+						dstField.SetMapIndex(key, dstMapVal)
+					}
+				}
+			} else if srcField.Kind() == reflect.Slice {
+				for j := 0; j < srcField.Len(); j++ {
+					srcElem := srcField.Index(j)
+					if j < dstField.Len() {
+						dstElem := dstField.Index(j)
+						if srcElem.Kind() == reflect.Ptr && !srcElem.IsNil() && srcElem.Elem().Kind() == reflect.Struct {
+							CopySecrets(srcElem.Interface(), dstElem.Interface())
+						} else if srcElem.Kind() == reflect.Struct {
+							CopySecrets(srcElem.Addr().Interface(), dstElem.Addr().Interface())
+						}
+					}
+				}
+			}
+		}
+	}
 }
