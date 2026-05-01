@@ -26,6 +26,26 @@ spec:
             cp /config-source/config.json /home/picoclaw/.picoclaw/config.json
             cp /config-source/cron.json /home/picoclaw/.picoclaw/cron.json
             rm -f /home/picoclaw/.picoclaw/secure.yaml /home/picoclaw/.picoclaw/.security.yml
+
+            # Set up SSH keys
+            echo "Setting up SSH keys..."
+            mkdir -p /home/picoclaw/.picoclaw/.ssh
+            if [ -f /ssh-source/id_ed25519 ]; then
+              cp /ssh-source/id_ed25519 /home/picoclaw/.picoclaw/.ssh/id_rsa
+              chmod 600 /home/picoclaw/.picoclaw/.ssh/id_rsa
+            fi
+            if [ -f /ssh-source/known_hosts ]; then
+              cp /ssh-source/known_hosts /home/picoclaw/.picoclaw/.ssh/known_hosts
+            fi
+            # Ensure github.com is in known_hosts
+            ssh-keyscan github.com >> /home/picoclaw/.picoclaw/.ssh/known_hosts 2>/dev/null
+            chmod 644 /home/picoclaw/.picoclaw/.ssh/known_hosts
+
+            # Set up git config
+            echo "Setting up git config..."
+            echo '[safe]' > /home/picoclaw/.picoclaw/.gitconfig
+            echo '	directory = *' >> /home/picoclaw/.picoclaw/.gitconfig
+
             # Ensure the agent has write permissions to its home volume
             chown -R 1000:1000 /home/picoclaw/.picoclaw
         volumeMounts:
@@ -33,6 +53,8 @@ spec:
           mountPath: /home/picoclaw/.picoclaw
         - name: picoclaw-config-source
           mountPath: /config-source
+        - name: ssh-keys-source
+          mountPath: /ssh-source
       containers:
       - name: picoclaw-agent
         image: stevef1uk/picoclaw-rpi:latest
@@ -72,6 +94,12 @@ spec:
         - name: picoclaw-secrets
           mountPath: /home/picoclaw/.picoclaw/secrets
           readOnly: true
+        - name: picoclaw-data
+          mountPath: /root/.ssh
+          subPath: .ssh
+        - name: picoclaw-data
+          mountPath: /root/.gitconfig
+          subPath: .gitconfig
       volumes:
       - name: picoclaw-data
         persistentVolumeClaim:
@@ -82,4 +110,7 @@ spec:
       - name: picoclaw-secrets
         secret:
           secretName: picoclaw-secrets
+      - name: ssh-keys-source
+        secret:
+          secretName: ssh-keys
       restartPolicy: Always
