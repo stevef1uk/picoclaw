@@ -117,10 +117,6 @@ func NewAgentInstance(
 	if cfg.Tools.IsToolEnabled("append_file") {
 		toolsRegistry.Register(tools.NewAppendFileTool(workspace, restrict, allowWritePaths))
 	}
-	if cfg.Tools.IsToolEnabled("freeride") {
-		cdPath := filepath.Join(filepath.Dir(filepath.Clean(workspace)), "cooldowns.json")
-		toolsRegistry.Register(tools.NewFreeRideTool(config.GetDefaultConfigPath(), cdPath, nil))
-	}
 
 	sessionsDir := filepath.Join(workspace, "sessions")
 	sessions := initSessionStore(sessionsDir)

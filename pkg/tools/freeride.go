@@ -109,17 +109,33 @@ func (t *FreeRideTool) handleClear() *ToolResult {
 		return ErrorResult("cooldown path not configured")
 	}
 
-	// Double-check: does the file exist?
-	if _, err := os.Stat(t.cooldownPath); os.IsNotExist(err) {
-		return UserResult("Cooldowns are already empty (no file found).")
+	cfgObj, err := config.LoadConfig(t.configPath)
+	if err != nil {
+		return ErrorResult(fmt.Sprintf("failed to load config: %v", err))
 	}
 
-	if err := os.Remove(t.cooldownPath); err != nil {
-		return ErrorResult(fmt.Sprintf("failed to delete cooldown file: %v", err))
+	// 1. Remove free models from fallbacks
+	newFallbacks := []string{}
+	for _, fb := range cfgObj.Agents.Defaults.ModelFallbacks {
+		if !isKnownOpenRouterAlias(cfgObj, fb) {
+			newFallbacks = append(newFallbacks, fb)
+		}
+	}
+	cfgObj.Agents.Defaults.ModelFallbacks = newFallbacks
+
+	if err := config.SaveConfig(t.configPath, cfgObj); err != nil {
+		return ErrorResult(fmt.Sprintf("failed to clear fallbacks from config: %v", err))
 	}
 
-	msg := "Success! Cooldown state cleared from disk.\n"
-	msg += "Re-loading configuration to reset in-memory state..."
+	// 2. Clear cooldowns
+	if _, err := os.Stat(t.cooldownPath); err == nil {
+		if err := os.Remove(t.cooldownPath); err != nil {
+			return ErrorResult(fmt.Sprintf("failed to delete cooldown file: %v", err))
+		}
+	}
+
+	msg := "Success! FreeRide fallbacks removed and cooldown state cleared.\n"
+	msg += "Re-loading configuration to apply changes..."
 
 	if t.reloadFunc != nil {
 		if err := t.reloadFunc(); err != nil {
