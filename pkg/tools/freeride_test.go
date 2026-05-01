@@ -312,6 +312,27 @@ func TestFreeRideTool_Clear(t *testing.T) {
 	configPath := filepath.Join(tempDir, "config.json")
 	cooldownPath := filepath.Join(tempDir, "cooldowns.json")
 
+	// Create initial config with fallbacks
+	initialCfg := &config.Config{
+		ModelList: []*config.ModelConfig{
+			{
+				ModelName: "google-gemini-pro-1.5",
+				Model:     "google/gemini-pro-1.5",
+				Protocol:  "openrouter",
+			},
+			{
+				ModelName: "keep-me",
+				Model:     "openai/gpt-4o",
+				Protocol:  "openai",
+			},
+		},
+	}
+	initialCfg.Agents.Defaults.ModelFallbacks = []string{"google-gemini-pro-1.5", "keep-me"}
+
+	if err := config.SaveConfig(configPath, initialCfg); err != nil {
+		t.Fatalf("failed to save initial config: %v", err)
+	}
+
 	// Create a dummy cooldown file
 	if err := os.WriteFile(cooldownPath, []byte("{}"), 0644); err != nil {
 		t.Fatalf("failed to create dummy cooldown file: %v", err)
@@ -336,9 +357,22 @@ func TestFreeRideTool_Clear(t *testing.T) {
 		t.Errorf("Expected reloadFunc to be called")
 	}
 
-	// Verify file is gone
+	// Verify cooldown file is gone
 	if _, err := os.Stat(cooldownPath); !os.IsNotExist(err) {
 		t.Errorf("Expected cooldown file to be deleted, but it still exists")
+	}
+
+	// Verify fallbacks are cleared
+	updatedCfg, err := config.LoadConfig(configPath)
+	if err != nil {
+		t.Fatalf("failed to load updated config: %v", err)
+	}
+
+	if len(updatedCfg.Agents.Defaults.ModelFallbacks) != 1 {
+		t.Errorf("Expected 1 fallback remaining, got %d", len(updatedCfg.Agents.Defaults.ModelFallbacks))
+	}
+	if updatedCfg.Agents.Defaults.ModelFallbacks[0] != "keep-me" {
+		t.Errorf("Expected 'keep-me' fallback to remain, got %v", updatedCfg.Agents.Defaults.ModelFallbacks)
 	}
 }
 
