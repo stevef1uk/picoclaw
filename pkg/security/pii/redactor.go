@@ -155,10 +155,6 @@ func (r *Redactor) BeforeTool(ctx context.Context, req *agent.ToolCallHookReques
 				req.Arguments["recipient"] = v
 			}
 		}
-	case "read_file":
-		if v, ok := req.Arguments["path"]; ok && req.Arguments["file_path"] == nil {
-			req.Arguments["file_path"] = v
-		}
 	}
 
 	// 2. Crucial: Robust Unmasking before tool execution
