@@ -680,6 +680,7 @@ data:
             "priority": 80,
             "config": {
               "allowed_tools": {
+                "cron": true,
                 "spawn": true,
                 "subagent": true,
                 "read_file": true,
@@ -768,8 +769,8 @@ data:
           "allow_remote": true,
           "custom_deny_patterns": null,
           "custom_allow_patterns": [
-            "^git\\s+push\\b",
-            "^git\\s+force\\b"
+            "\\bgit\\s+push\\b",
+            "\\bgit\\s+force\\b"
           ],
           "timeout_seconds": 60
         },
@@ -805,6 +806,7 @@ data:
           "interval_minutes": 5
         },
         "whitelist": [
+          "cron",
           "spawn",
           "subagent",
           "read_file",
@@ -890,6 +892,9 @@ data:
           "enabled": true
         },
         "web_fetch": {
+          "enabled": true
+        },
+        "freeride": {
           "enabled": true
         }
       },

@@ -634,6 +634,7 @@
         "config": {
           "allowed_tools": {
             "append_file": true,
+            "cron": true,
             "edit_file": true,
             "exec": true,
             "freeride": true,
@@ -705,14 +706,17 @@
       "exec_timeout_minutes": 5,
       "allow_command": true
     },
-    "exec": {
-      "enabled": true,
-      "enable_deny_patterns": true,
-      "allow_remote": true,
-      "custom_deny_patterns": null,
-      "custom_allow_patterns": null,
-      "timeout_seconds": 60
-    },
+      "exec": {
+        "enabled": true,
+        "enable_deny_patterns": true,
+        "allow_remote": true,
+        "custom_deny_patterns": null,
+        "custom_allow_patterns": [
+          "\\bgit\\s+push\\b",
+          "\\bgit\\s+force\\b"
+        ],
+        "timeout_seconds": 60
+      },
     "skills": {
       "enabled": true,
       "registries": {
@@ -802,6 +806,9 @@
       "enabled": true
     },
     "write_file": {
+      "enabled": true
+    },
+    "freeride": {
       "enabled": true
     }
   },
