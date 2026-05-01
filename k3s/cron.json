@@ -40,6 +40,23 @@
       "createdAtMs": 1713511200000,
       "updatedAtMs": 1713511200000,
       "deleteAfterRun": false
+    },
+    {
+      "id": "git-secret-monitor",
+      "name": "Git Secret Monitor",
+      "enabled": true,
+      "schedule": {
+        "kind": "every_seconds",
+        "value": 1800
+      },
+      "payload": {
+        "kind": "command",
+        "command": "/home/picoclaw/.picoclaw/skills/git-secret-monitor/monitor.sh"
+      },
+      "state": {},
+      "createdAtMs": 1714552962000,
+      "updatedAtMs": 1714552962000,
+      "deleteAfterRun": false
     }
   ]
 }
