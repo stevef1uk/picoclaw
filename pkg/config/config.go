@@ -715,19 +715,19 @@ type BaiduSearchConfig struct {
 
 type WebToolsConfig struct {
 	ToolConfig           `yaml:",inline"               envPrefix:"PICOCLAW_TOOLS_WEB_"`
-	Brave                BraveConfig       `json:"brave"                yaml:"brave,omitempty"`
-	Tavily               TavilyConfig      `json:"tavily"               yaml:"tavily,omitempty"`
-	Sogou                SogouConfig       `json:"sogou"                yaml:"sogou,omitempty"`
-	DuckDuckGo           DuckDuckGoConfig  `json:"duckduckgo"           yaml:"duckduckgo,omitempty"`
-	Perplexity           PerplexityConfig  `json:"perplexity"           yaml:"perplexity,omitempty"`
-	SearXNG              SearXNGConfig     `json:"searxng"              yaml:"searxng,omitempty"`
-	GLMSearch            GLMSearchConfig   `json:"glm_search"           yaml:"glm_search,omitempty"`
-	BaiduSearch          BaiduSearchConfig `json:"baidu_search"         yaml:"baidu_search,omitempty"`
-	Provider             string            `json:"provider,omitempty"    yaml:"provider,omitempty"             env:"PICOCLAW_TOOLS_WEB_PROVIDER"`
-	PreferNative         bool              `json:"prefer_native"         yaml:"prefer_native,omitempty"        env:"PICOCLAW_TOOLS_WEB_PREFER_NATIVE"`
-	Proxy                string            `json:"proxy,omitempty"       yaml:"proxy,omitempty"                env:"PICOCLAW_TOOLS_WEB_PROXY"`
-	FetchLimitBytes      int64             `json:"fetch_limit_bytes,omitempty" yaml:"fetch_limit_bytes,omitempty" env:"PICOCLAW_TOOLS_WEB_FETCH_LIMIT_BYTES"`
-	Format               string            `json:"format,omitempty"      yaml:"format,omitempty"               env:"PICOCLAW_TOOLS_WEB_FORMAT"`
+	Brave                BraveConfig         `json:"brave"                yaml:"brave,omitempty"`
+	Tavily               TavilyConfig        `json:"tavily"               yaml:"tavily,omitempty"`
+	Sogou                SogouConfig         `json:"sogou"                yaml:"sogou,omitempty"`
+	DuckDuckGo           DuckDuckGoConfig    `json:"duckduckgo"           yaml:"duckduckgo,omitempty"`
+	Perplexity           PerplexityConfig    `json:"perplexity"           yaml:"perplexity,omitempty"`
+	SearXNG              SearXNGConfig       `json:"searxng"              yaml:"searxng,omitempty"`
+	GLMSearch            GLMSearchConfig     `json:"glm_search"           yaml:"glm_search,omitempty"`
+	BaiduSearch          BaiduSearchConfig   `json:"baidu_search"         yaml:"baidu_search,omitempty"`
+	Provider             string              `json:"provider,omitempty"    yaml:"provider,omitempty"             env:"PICOCLAW_TOOLS_WEB_PROVIDER"`
+	PreferNative         bool                `json:"prefer_native"         yaml:"prefer_native,omitempty"        env:"PICOCLAW_TOOLS_WEB_PREFER_NATIVE"`
+	Proxy                string              `json:"proxy,omitempty"       yaml:"proxy,omitempty"                env:"PICOCLAW_TOOLS_WEB_PROXY"`
+	FetchLimitBytes      int64               `json:"fetch_limit_bytes,omitempty" yaml:"fetch_limit_bytes,omitempty" env:"PICOCLAW_TOOLS_WEB_FETCH_LIMIT_BYTES"`
+	Format               string              `json:"format,omitempty"      yaml:"format,omitempty"               env:"PICOCLAW_TOOLS_WEB_FORMAT"`
 	PrivateHostWhitelist FlexibleStringSlice `json:"private_host_whitelist,omitempty" yaml:"private_host_whitelist,omitempty" env:"PICOCLAW_TOOLS_WEB_PRIVATE_HOST_WHITELIST"`
 }
 
