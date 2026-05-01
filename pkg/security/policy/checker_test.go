@@ -48,4 +48,20 @@ func TestChecker_ApproveTool(t *testing.T) {
 		require.NoError(t, err)
 		assert.True(t, decision.Approved)
 	})
+
+	t.Run("PrefixMatch", func(t *testing.T) {
+		cfgWithPrefix := Config{
+			AllowedTools: map[string]bool{"mcp.": true},
+		}
+		cPrefix := NewChecker(cfgWithPrefix)
+		req := &agent.ToolApprovalRequest{Tool: "mcp.search"}
+		decision, err := cPrefix.ApproveTool(ctx, req)
+		require.NoError(t, err)
+		assert.True(t, decision.Approved)
+
+		reqBlocked := &agent.ToolApprovalRequest{Tool: "other.search"}
+		decisionBlocked, err := cPrefix.ApproveTool(ctx, reqBlocked)
+		require.NoError(t, err)
+		assert.False(t, decisionBlocked.Approved)
+	})
 }

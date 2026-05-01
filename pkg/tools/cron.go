@@ -12,6 +12,7 @@ import (
 	"github.com/sipeed/picoclaw/pkg/config"
 	"github.com/sipeed/picoclaw/pkg/constants"
 	"github.com/sipeed/picoclaw/pkg/cron"
+	"github.com/sipeed/picoclaw/pkg/logger"
 	"github.com/sipeed/picoclaw/pkg/utils"
 )
 
@@ -304,6 +305,12 @@ func (t *CronTool) enableJob(args map[string]any, enable bool) *ToolResult {
 
 // ExecuteJob executes a cron job through the agent
 func (t *CronTool) ExecuteJob(ctx context.Context, job *cron.CronJob) string {
+	logger.InfoCF("tool", "Executing cron job", map[string]any{
+		"job_id":   job.ID,
+		"job_name": job.Name,
+		"payload":  job.Payload,
+	})
+
 	// Get channel/chatID from job payload
 	channel := job.Payload.Channel
 	chatID := job.Payload.To

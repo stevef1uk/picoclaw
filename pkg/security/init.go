@@ -7,6 +7,7 @@ import (
 
 	"github.com/sipeed/picoclaw/pkg/agent"
 	"github.com/sipeed/picoclaw/pkg/config"
+	"github.com/sipeed/picoclaw/pkg/logger"
 	"github.com/sipeed/picoclaw/pkg/security/behavior"
 	"github.com/sipeed/picoclaw/pkg/security/canary"
 	"github.com/sipeed/picoclaw/pkg/security/ipia"
@@ -39,6 +40,9 @@ func Init() {
 				return nil, fmt.Errorf("failed to unmarshal security_policy config: %w", err)
 			}
 		}
+		logger.InfoCF("security", "Initializing security_policy hook", map[string]any{
+			"allowed_tools": pcfg.AllowedTools,
+		})
 		return policy.NewChecker(pcfg), nil
 	})
 

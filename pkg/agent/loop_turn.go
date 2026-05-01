@@ -1034,6 +1034,10 @@ turnLoop:
 			}
 
 			if al.hooks != nil {
+				logger.DebugCF("agent", "Requesting tool approval", map[string]any{
+					"agent_id": ts.agent.ID,
+					"tool":     toolName,
+				})
 				approval := al.hooks.ApproveTool(turnCtx, &ToolApprovalRequest{
 					Meta:      ts.eventMeta("runTurn", "turn.tool.approve"),
 					Context:   cloneTurnContext(ts.turnCtx),
@@ -1578,7 +1582,7 @@ func (al *AgentLoop) resolveContextManager() ContextManager {
 		})
 		return &legacyContextManager{al: al}
 	}
-	cm, err := factory(al.cfg.Agents.Defaults.ContextManagerConfig, al)
+	cm, err := factory(json.RawMessage(al.cfg.Agents.Defaults.ContextManagerConfig), al)
 	if err != nil {
 		logger.WarnCF("agent", "Failed to create context manager, falling back to legacy", map[string]any{
 			"name":  name,

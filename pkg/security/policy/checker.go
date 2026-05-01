@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/sipeed/picoclaw/pkg/agent"
+	"github.com/sipeed/picoclaw/pkg/logger"
 )
 
 // Config defines the security policy for tool execution.
@@ -41,15 +42,26 @@ func (c *Checker) ApproveTool(ctx context.Context, req *agent.ToolApprovalReques
 		return agent.ApprovalDecision{Approved: false, Reason: "request is nil"}, nil
 	}
 
+	logger.InfoCF("security", "Checking tool approval", map[string]any{"tool": req.Tool})
+
 	// 1. Explicit Disallow
 	if c.Config.DisallowedTools[req.Tool] {
+		logger.InfoCF("security", "Tool explicitly disallowed", map[string]any{"tool": req.Tool})
 		return agent.ApprovalDecision{
 			Approved: false,
 			Reason:   fmt.Sprintf("Tool %q is globally disallowed by security policy", req.Tool),
 		}, nil
 	}
 
-	// 2. Whitelisting (if enabled)
+	// 2. Human Approval Required
+	if c.Config.RequiresApproval[req.Tool] {
+		logger.InfoCF("security", "Tool requires human approval", map[string]any{"tool": req.Tool})
+		return agent.ApprovalDecision{
+			Approved: false,
+			Reason:   fmt.Sprintf("Tool %q requires explicit human approval", req.Tool),
+		}, nil
+	}
+	// 3. Whitelist Check (if configured)
 	if len(c.Config.AllowedTools) > 0 {
 		allowed := false
 		if c.Config.AllowedTools[req.Tool] {
@@ -63,26 +75,25 @@ func (c *Checker) ApproveTool(ctx context.Context, req *agent.ToolApprovalReques
 				}
 				if strings.HasPrefix(req.Tool, "mcp_"+w+"_") ||
 					strings.HasPrefix(req.Tool, "tool_"+w+"_") ||
-					strings.HasPrefix(req.Tool, w+"_") {
+					strings.HasPrefix(req.Tool, w+"_") ||
+					(strings.HasSuffix(w, ".") && strings.HasPrefix(req.Tool, w)) {
 					allowed = true
 					break
 				}
 			}
 		}
 
-		if !allowed {
-			return agent.ApprovalDecision{
-				Approved: false,
-				Reason:   fmt.Sprintf("Tool %q is not in the allowed tools whitelist", req.Tool),
-			}, nil
+		if allowed {
+			return agent.ApprovalDecision{Approved: true}, nil
 		}
-	}
 
-	// 3. Human Approval Required
-	if c.Config.RequiresApproval[req.Tool] {
+		logger.InfoCF("security", "Tool not in allowed tools whitelist", map[string]any{
+			"tool":          req.Tool,
+			"allowed_tools": c.Config.AllowedTools,
+		})
 		return agent.ApprovalDecision{
 			Approved: false,
-			Reason:   fmt.Sprintf("Tool %q requires explicit human approval", req.Tool),
+			Reason:   fmt.Sprintf("Tool %q is not in the allowed tools whitelist", req.Tool),
 		}, nil
 	}
 
